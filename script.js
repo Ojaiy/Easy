@@ -237,7 +237,7 @@ const Auth = {
   showLoading('Creating Account...');
 
   try {
-    const res = await API.post('api/v1/userSignup', data);
+    const res = await API.post('/api/v1/userSignup', data);
 
     console.log("SIGNUP RESPONSE:", res);
 
@@ -262,7 +262,7 @@ const Auth = {
   showLoading('Signing In...');
 
   try {
-    const res = await API.post('api/v1/userSignin', data);
+    const res = await API.post('/api/v1/userSignin', data);
 
 
    if (res.success && res.token) {
@@ -286,7 +286,7 @@ const Auth = {
   async vendorSignup(data) {
     showLoading('Creating Vendor Account...');
     try {
-      const res = await API.post('/vendorSignup', data);
+      const res = await API.post('/api/v1/vendorSignup', data);
       if (res.success) {
         showToast(res.message || 'Vendor account created!', 'success');
         navigate('login');
@@ -300,7 +300,7 @@ const Auth = {
   async logout() {
     showLoading('Logging Out...');
     try {
-      await API.post('/userSignout', {});
+      await API.post('/api/v1/userSignout', {});
     } catch (e) { /* ignore */ }
     this.clearSession();
     hideLoading();
