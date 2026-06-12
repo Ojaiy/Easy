@@ -4,7 +4,7 @@
 
 // ============ CONFIGURATION ============
 const Config = {
-  API_BASE: 'https://easyshipp.onrender.com/',
+  API_BASE: 'https://easyshipp.onrender.com',
   TOKEN_KEY: 'easyship_token',
   USER_KEY: 'easyship_user',
   TOAST_DURATION: 4500,
