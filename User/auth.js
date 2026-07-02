@@ -88,40 +88,40 @@ const Auth = (() => {
         try {
             const response = await API.signin({ email, password });
 
+            // ✅ NEW: Handle unapproved riders (403)
+            if (response.status === 403) {
+                UI.showToast(response.message || 'Your account is pending approval. Please wait for admin confirmation.', 'error');
+                UI.setButtonLoading(btn, false);
+                return;
+            }
+
             // The API should return { token, user } or similar
             const token = response.token || response.data?.token || '';
             const user = response.user || response.data?.user || response.data || {};
 
             if (token) {
+                API.saveAuth(token, user);
+                UI.showToast('Welcome back! Signed in successfully.', 'success');
 
-    API.saveAuth(token, user);
+                if (response.redirectPage) {
+                    window.location.href = response.redirectPage;
+                    return;
+                }
 
-    UI.showToast(
-        'Welcome back! Signed in successfully.',
-        'success'
-    );
-
-    if (response.redirectPage) {
-
-        window.location.href =
-            response.redirectPage;
-
-        return;
-
-    }
-
-    App.onAuthSuccess();
-
-}
-
-     else {
+                App.onAuthSuccess();
+            } else {
                 UI.showToast('Sign in successful.', 'success');
                 // Try to save what we can
                 API.saveAuth('session', user);
                 App.onAuthSuccess();
             }
         } catch (error) {
-            UI.showToast(error.message || 'Sign in failed. Please try again.', 'error');
+            // Check if error response has status 403
+            if (error.status === 403) {
+                UI.showToast(error.message || 'Your account is pending approval. Please wait for admin confirmation.', 'error');
+            } else {
+                UI.showToast(error.message || 'Sign in failed. Please try again.', 'error');
+            }
         } finally {
             UI.setButtonLoading(btn, false);
         }

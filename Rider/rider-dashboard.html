@@ -142,8 +142,27 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="rider-dashboard.js"></script>
     <script>
-        protectRiderPage();
-        loadRiderDashboard();
+        // FIXED: Removed status check — only checks role
+        function protectRiderPage() {
+            const userData = localStorage.getItem('easyship_user');
+            if (!userData) {
+                window.location.href = '/User/index.html';
+                return;
+            }
+            try {
+                const user = JSON.parse(userData);
+                if (user.role !== 'rider') {
+                    window.location.href = '/User/index.html';
+                }
+            } catch (e) {
+                window.location.href = '/User/index.html';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            protectRiderPage();
+            loadRiderDashboard();
+        });
     </script>
 
 </body>

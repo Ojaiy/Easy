@@ -13,7 +13,7 @@ let currentOrderId = null;
 function protectRiderPage() {
     token = localStorage.getItem('easyship_token');
     if (!token) {
-        window.location.href = '/User/index.html';
+        window.location.href = '../User/index.html';
         return;
     }
 
@@ -307,5 +307,5 @@ function riderLogout() {
     if (socket) socket.disconnect();
     localStorage.removeItem('easyship_token');
     localStorage.removeItem('easyship_user');
-    window.location.href = '/User/index.html';
+    window.location.href = '../User/index.html';
 }
