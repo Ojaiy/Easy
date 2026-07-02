@@ -1,9 +1,5 @@
 {
     "rewrites": [
-        { "source": "/User/(.*)", "destination": "/User/$1" },
-        { "source": "/Admin/(.*)", "destination": "/Admin/$1" },
-        { "source": "/Rider/(.*)", "destination": "/Rider/$1" },
-        { "source": "/", "destination": "/User/index.html" },
-        { "source": "/(.*)", "destination": "/$1" }
+        { "source": "/(.*)", "destination": "/index.html" }
     ]
 }
