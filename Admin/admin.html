@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EASYSHIP NG - Admin Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="./admin.css"
+    >
+
+    <script
+        src="https://unpkg.com/lucide@latest"
+    ></script>
+</head>
+
+<body>
+
+<div class="admin-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="logo-area">
+            <h2>EASYSHIP NG</h2>
+            <span>Admin Panel</span>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <a
+                href="#dashboard"
+                class="nav-item active"
+                data-page="dashboard"
+            >
+                <i data-lucide="layout-dashboard"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a
+                href="#riders"
+                class="nav-item"
+                data-page="riders"
+            >
+                <i data-lucide="bike"></i>
+                <span>Riders</span>
+            </a>
+
+            <a
+                href="#customers"
+                class="nav-item"
+                data-page="customers"
+            >
+                <i data-lucide="users"></i>
+                <span>Customers</span>
+            </a>
+
+            <a
+                href="#orders"
+                class="nav-item"
+                data-page="orders"
+            >
+                <i data-lucide="package"></i>
+                <span>Orders</span>
+            </a>
+
+        </nav>
+
+        <button
+            id="logout-btn"
+            class="logout-btn"
+        >
+            <i data-lucide="log-out"></i>
+            Logout
+        </button>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+                <h1 id="page-title">
+                    Dashboard
+                </h1>
+            </div>
+
+            <div class="admin-info">
+
+                <div
+                    class="avatar"
+                    id="admin-avatar"
+                >
+                    A
+                </div>
+
+                <div>
+                    <h4 id="admin-name">
+                        Admin
+                    </h4>
+
+                    <small>
+                        Administrator
+                    </small>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- DASHBOARD -->
+        <section
+            id="page-dashboard"
+            class="page active"
+        >
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <h4>Total Customers</h4>
+                    <h2 id="total-customers">0</h2>
+                </div>
+
+                <div class="stat-card">
+                    <h4>Total Riders</h4>
+                    <h2 id="total-riders">0</h2>
+                </div>
+
+                <div class="stat-card">
+                    <h4>Total Orders</h4>
+                    <h2 id="total-orders">0</h2>
+                </div>
+
+                <div class="stat-card">
+                    <h4>Pending Orders</h4>
+                    <h2 id="pending-orders">0</h2>
+                </div>
+
+                <div class="stat-card">
+                    <h4>Delivered Orders</h4>
+                    <h2 id="delivered-orders">0</h2>
+                </div>
+
+                <div class="stat-card">
+                    <h4>Cancelled Orders</h4>
+                    <h2 id="cancelled-orders">0</h2>
+                </div>
+
+            </div>
+
+        </section>
+
+
+<!-- RIDERS -->
+<section
+    id="page-riders"
+    class="page"
+>
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>
+                Rider Management
+            </h2>
+
+            <p>
+                Review applications and manage active riders
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- PENDING RIDERS -->
+
+    <div class="rider-section">
+
+        <h3>
+            Pending Applications
+        </h3>
+
+        <div
+            id="riders-container"
+            class="cards-container"
+        ></div>
+
+    </div>
+
+
+    <!-- APPROVED RIDERS -->
+
+    <div class="rider-section">
+
+        <h3>
+            Approved Riders
+        </h3>
+
+        <div
+            id="approved-riders-container"
+            class="cards-container"
+        ></div>
+
+    </div>
+
+
+    <!-- REJECTED RIDERS -->
+
+    <div class="rider-section">
+
+        <h3>
+            Rejected Riders
+        </h3>
+
+        <div
+            id="rejected-riders-container"
+            class="cards-container"
+        ></div>
+
+    </div>
+
+</section>
+
+
+        <!-- CUSTOMERS -->
+        <section
+            id="page-customers"
+            class="page"
+        >
+
+            <h2>Customers</h2>
+
+            <div
+                id="customers-container"
+                class="cards-container"
+            ></div>
+
+        </section>
+
+
+        <!-- ORDERS -->
+        <section
+            id="page-orders"
+            class="page"
+        >
+
+            <h2>Orders</h2>
+
+            <div
+                id="orders-container"
+                class="cards-container"
+            ></div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- RIDER MODAL -->
+<div
+    id="rider-modal"
+    class="modal"
+>
+
+    <div class="modal-content">
+
+        <h2>
+            Register Rider
+        </h2>
+
+        <form id="rider-form">
+
+            <input
+                type="text"
+                id="rider-name"
+                placeholder="Full Name"
+                required
+            >
+
+            <input
+                type="email"
+                id="rider-email"
+                placeholder="Email"
+                required
+            >
+
+            <input
+                type="text"
+                id="rider-phone"
+                placeholder="Phone Number"
+                required
+            >
+
+            <input
+                type="password"
+                id="rider-password"
+                placeholder="Password"
+                required
+            >
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    id="close-modal"
+                    class="secondary-btn"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-btn"
+                >
+                    Register
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<div
+    id="review-modal"
+    class="modal"
+>
+
+    <div
+        class="modal-content review-modal-content"
+    >
+
+        <button
+            id="close-review-modal"
+            class="close-review-btn"
+        >
+            ×
+        </button>
+
+        <div id="review-body"></div>
+
+    </div>
+
+</div>
+
+
+<script src="./admin.js"></script>
+
+<script>
+    lucide.createIcons();
+</script>
+
+</body>
+</html>

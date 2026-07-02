@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+    Application Rejected
+</title>
+
+<link
+    rel="stylesheet"
+    href="rider-pending.css"
+>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <div class="icon rejected">
+            ❌
+        </div>
+
+        <h1>
+            Application Rejected
+        </h1>
+
+        <p>
+            Unfortunately, your rider
+            application was not approved.
+        </p>
+
+        <p>
+            Please contact support or
+            submit a new application.
+        </p>
+
+        <div
+            class="status-box rejected-box"
+        >
+
+            Status:
+            <span>
+                Rejected
+            </span>
+
+        </div>
+
+        <button
+            onclick="logout()"
+        >
+            Logout
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+function logout() {
+
+    localStorage.removeItem(
+        'riderToken'
+    );
+
+    localStorage.removeItem(
+        'rider'
+    );
+
+    window.location.href =
+        'rider-login.html';
+
+}
+
+</script>
+
+</body>
+</html>

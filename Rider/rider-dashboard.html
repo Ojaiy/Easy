@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rider Dashboard | EASYSHIP NG</title>
+    <link rel="stylesheet" href="./rider-dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- TOP NAV -->
+    <header class="dashboard-nav">
+        <div class="nav-left">
+            <img src="./EasyLogo.png" alt="EASYSHIP" class="nav-logo">
+            <h2>Rider</h2>
+            <span class="status-pill" id="rider-status">Loading...</span>
+        </div>
+        <div class="nav-right">
+            <span class="rider-name" id="rider-name">Loading...</span>
+            <button onclick="riderLogout()" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Logout
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN DASHBOARD -->
+    <main class="dashboard-container">
+
+        <!-- PROFILE & STATS ROW -->
+        <div class="dashboard-row">
+
+            <!-- PROFILE CARD -->
+            <section class="card profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profile-avatar">R</div>
+                    <div class="profile-info">
+                        <h4 id="profile-name">Loading...</h4>
+                        <p id="profile-email">email@example.com</p>
+                        <span class="badge" id="profile-status">Online</span>
+                    </div>
+                </div>
+                <div class="profile-details">
+                    <div class="profile-detail-item">
+                        <i class="fa-solid fa-phone"></i>
+                        <span id="profile-phone">-</span>
+                    </div>
+                    <div class="profile-detail-item">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span id="profile-location">-</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STATS GRID -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <i class="fa-solid fa-box"></i>
+                    <span class="stat-number" id="total-deliveries">0</span>
+                    <span class="stat-label">Total Deliveries</span>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-truck"></i>
+                    <span class="stat-number" id="active-orders">0</span>
+                    <span class="stat-label">Active Orders</span>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span class="stat-number" id="completed-orders">0</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-star"></i>
+                    <span class="stat-number" id="rating">0</span>
+                    <span class="stat-label">Rating</span>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ACTIVE DELIVERY -->
+        <section class="card delivery-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-location-dot"></i> Active Delivery</h3>
+                <span class="delivery-status" id="delivery-status-badge">No Active</span>
+            </div>
+            <div class="delivery-box" id="active-delivery-box">
+                <div class="delivery-route">
+                    <div class="route-point">
+                        <i class="fa-solid fa-circle pickup-dot"></i>
+                        <div>
+                            <span class="route-label">Pickup</span>
+                            <p class="route-address" id="pickup-location">-</p>
+                        </div>
+                    </div>
+                    <div class="route-line"></div>
+                    <div class="route-point">
+                        <i class="fa-solid fa-circle dropoff-dot"></i>
+                        <div>
+                            <span class="route-label">Dropoff</span>
+                            <p class="route-address" id="dropoff-location">-</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="delivery-meta">
+                    <span id="delivery-order-id">Order #---</span>
+                    <span id="delivery-customer">Customer: -</span>
+                </div>
+            </div>
+            <div class="delivery-actions" id="delivery-actions">
+                <button class="btn accept" onclick="acceptOrder()" style="display:none">
+                    <i class="fa-solid fa-check"></i> Accept Order
+                </button>
+                <button class="btn pickup" onclick="markPickedUp()" style="display:none">
+                    <i class="fa-solid fa-box-open"></i> Mark Picked Up
+                </button>
+                <button class="btn deliver" onclick="markDelivered()" style="display:none">
+                    <i class="fa-solid fa-flag-checkered"></i> Mark Delivered
+                </button>
+            </div>
+        </section>
+
+        <!-- AVAILABLE ORDERS -->
+        <section class="card available-section">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-list"></i> Available Orders</h3>
+                <span class="available-count" id="available-count">0 available</span>
+            </div>
+            <div id="available-orders-container">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Loading orders...</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Socket.IO client — served automatically by Socket.IO server -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="rider-dashboard.js"></script>
+    <script>
+        protectRiderPage();
+        loadRiderDashboard();
+    </script>
+
+</body>
+</html>

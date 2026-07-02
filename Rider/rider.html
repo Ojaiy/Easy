@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register as Rider | EASYSHIP NG</title>
+
+    <link rel="stylesheet" href="rider.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+    <div class="rider-container">
+
+        <div class="rider-header">
+
+            <a href="../User/index.html" class="back-home">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back Home
+            </a>
+
+            <img
+                src="../assets/logo.png"
+                alt="EasyShip Logo"
+                class="rider-logo"
+            >
+
+            <h1>
+                Become an EASYSHIP Rider
+            </h1>
+
+            <p>
+                Register to start earning by delivering packages across Nigeria.
+            </p>
+
+        </div>
+
+        <form
+            id="rider-register-form"
+            class="rider-form"
+            enctype="multipart/form-data"
+            onsubmit="handleRiderSignup(event)"
+        >
+
+            <!-- PERSONAL INFORMATION -->
+            <div class="form-card">
+
+                <h2>
+                    <i class="fa-solid fa-user"></i>
+                    Personal Information
+                </h2>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" id="firstName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" id="lastName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" id="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="phone" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" id="password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Date of Birth *</label>
+                        <input type="date" id="dateOfBirth" required>
+                    </div>
+
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Residential Address *</label>
+                    <textarea id="address" rows="3" required></textarea>
+                </div>
+
+            </div>
+
+            <!-- VEHICLE INFORMATION -->
+            <div class="form-card">
+
+                <h2>
+                    <i class="fa-solid fa-motorcycle"></i>
+                    Vehicle Information
+                </h2>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>Vehicle Type *</label>
+                        <select id="vehicleType" required>
+                            <option value="">Select Vehicle</option>
+                            <option value="Motorcycle">Motorcycle</option>
+                            <option value="Car">Car</option>
+                            <option value="Van">Van</option>
+                            <option value="Truck">Truck</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Vehicle Brand *</label>
+                        <input type="text" id="vehicleBrand" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Vehicle Model *</label>
+                        <input type="text" id="vehicleModel" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Vehicle Color *</label>
+                        <input type="text" id="vehicleColor" required>
+                    </div>
+
+                    <div class="form-group full-span">
+                        <label>Plate Number *</label>
+                        <input type="text" id="plateNumber" required>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- DOCUMENTS -->
+            <div class="form-card">
+
+                <h2>
+                    <i class="fa-solid fa-file"></i>
+                    Required Documents
+                </h2>
+
+                <div class="upload-grid">
+
+                    <div class="form-group">
+                        <label>Profile Photo *</label>
+                        <input type="file" id="profilePhoto" accept="image/*" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Driver's License *</label>
+                        <input type="file" id="driversLicense" accept=".jpg,.jpeg,.png,.pdf" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Government ID *</label>
+                        <input type="file" id="governmentId" accept=".jpg,.jpeg,.png,.pdf" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Vehicle Registration *</label>
+                        <input type="file" id="vehicleRegistration" accept=".jpg,.jpeg,.png,.pdf" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Vehicle Photo *</label>
+                        <input type="file" id="vehiclePhoto" accept="image/*" required>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SUBMIT -->
+            <button
+                type="submit"
+                id="register-btn"
+                class="register-btn"
+            >
+                Register as Rider
+            </button>
+
+            <div class="signin-link">
+                Already registered?
+               <a href="../User/index.html">Sign In</a>
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- JS CONNECTION -->
+    <script src="rider.js"></script>
+
+</body>
+</html>

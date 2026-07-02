@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EASYSHIP NG — Fast, Secure Logistics</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <!-- Splash / Loading Screen -->
+   <!-- Splash / Loading Screen -->
+<div id="splash-screen" class="splash-screen">
+    <div class="splash-content">
+        <img src="./EasyLogo.png" alt="EASYSHIP NG" class="splash-logo-img">
+        <h1 class="splash-title">EASYSHIP NG</h1>
+        <p class="splash-tagline">Fast, Secure Logistics</p>
+        <div class="splash-loader">
+            <div class="splash-loader-bar"></div>
+        </div>
+    </div>
+</div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ==================== AUTH PAGES ==================== -->
+    <div id="auth-page" class="page active">
+        <div class="auth-wrapper">
+            <div class="auth-left">
+                <div class="auth-brand">
+                    <div class="auth-logo-box">
+                        <img src="./EasyLogo.png" alt="EASYSHIP NG" class="auth-logo-img">
+                    </div>
+                    <h1 class="auth-brand-name">EASYSHIP NG</h1>
+                    <p class="auth-brand-tagline">Fast, Secure Logistics</p>
+                </div>
+                <div class="auth-illustration">
+                    <div class="illustration-circle c1"></div>
+                    <div class="illustration-circle c2"></div>
+                    <div class="illustration-circle c3"></div>
+                    <div class="illustration-graphic">
+                        <i data-lucide="package" class="ill-icon i1"></i>
+                        <i data-lucide="map-pin" class="ill-icon i2"></i>
+                        <i data-lucide="route" class="ill-icon i3"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="auth-right">
+                <!-- Sign In Form -->
+                <div id="signin-form" class="auth-form active">
+                    <div class="auth-form-header">
+                        <h2>Welcome Back</h2>
+                        <p>Sign in to your EASYSHIP NG account</p>
+                    </div>
+                    <form id="signin-form-el" novalidate>
+                        <div class="form-group">
+                            <label for="signin-email">Email Address</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="mail" class="input-icon"></i>
+                                <input type="email" id="signin-email" placeholder="you@example.com" required>
+                            </div>
+                            <span class="field-error" id="signin-email-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="signin-password">Password</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="lock" class="input-icon"></i>
+                                <input type="password" id="signin-password" placeholder="Enter your password" required>
+                                <button type="button" class="toggle-password" data-target="signin-password">
+                                    <i data-lucide="eye" class="eye-icon"></i>
+                                </button>
+                            </div>
+                            <span class="field-error" id="signin-password-error"></span>
+                        </div>
+                        <button type="submit" class="btn-primary btn-full" id="signin-btn">
+                            <span class="btn-text">Sign In</span>
+                            <span class="btn-loader" style="display:none;"></span>
+                        </button>
+                    </form>
+                    <div class="auth-switch">
+                        Don't have an account? <a href="#" id="goto-signup">Create one</a>
+                    </div>
+                </div>
+
+                <!-- Sign Up Form -->
+                <div id="signup-form" class="auth-form">
+                    <div class="auth-form-header">
+                        <h2>Create Account</h2>
+                        <p>Join EASYSHIP NG and start shipping</p>
+                    </div>
+                    <form id="signup-form-el" novalidate>
+                        <div class="form-group">
+                            <label for="signup-name">Full Name</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="user" class="input-icon"></i>
+                                <input type="text" id="signup-name" placeholder="John Doe" required>
+                            </div>
+                            <span class="field-error" id="signup-name-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-email">Email Address</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="mail" class="input-icon"></i>
+                                <input type="email" id="signup-email" placeholder="you@example.com" required>
+                            </div>
+                            <span class="field-error" id="signup-email-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-phone">Phone Number</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="phone" class="input-icon"></i>
+                                <input type="tel" id="signup-phone" placeholder="+234 800 000 0000" required>
+                            </div>
+                            <span class="field-error" id="signup-phone-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-password">Password</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="lock" class="input-icon"></i>
+                                <input type="password" id="signup-password" placeholder="Min 6 characters" required>
+                                <button type="button" class="toggle-password" data-target="signup-password">
+                                    <i data-lucide="eye" class="eye-icon"></i>
+                                </button>
+                            </div>
+                            <span class="field-error" id="signup-password-error"></span>
+                        </div>
+                        <button type="submit" class="btn-primary btn-full" id="signup-btn">
+                            <span class="btn-text">Create Account</span>
+                            <span class="btn-loader" style="display:none;"></span>
+                        </button>
+                    </form>
+                    <div class="auth-switch">
+                        Already have an account?
+                        <a href="#" id="goto-signin">Sign In</a>
+                    </div>
+
+                    <div class="auth-switch" style="margin-top: 12px;">
+                        Want to earn with EASYSHIP NG?
+                        <a href="../Rider/rider.html"
+                           style="color:#16a34a;font-weight:600;">
+                            Register as Rider
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== APP SHELL ==================== -->
+    <div id="app-shell" class="app-shell">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="./EasyLogo.png" alt="EASYSHIP NG" class="sidebar-logo-img">
+                    <span class="sidebar-brand">EASYSHIP NG</span>
+                </div>
+                <button class="sidebar-close" id="sidebar-close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" data-page="dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#orders" class="nav-item" data-page="orders">
+                    <i data-lucide="package"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="#create-order" class="nav-item" data-page="create-order">
+                    <i data-lucide="plus-circle"></i>
+                    <span>New Order</span>
+                </a>
+                <a href="#tracking" class="nav-item" data-page="tracking">
+                    <i data-lucide="map-pin"></i>
+                    <span>Track Shipment</span>
+                </a>
+                <a href="#profile" class="nav-item" data-page="profile">
+                    <i data-lucide="user-circle"></i>
+                    <span>Profile</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="nav-item" id="signout-btn">
+                    <i data-lucide="log-out"></i>
+                    <span>Sign Out</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menu-toggle">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <h2 class="page-title" id="page-title">Dashboard</h2>
+                </div>
+                <div class="topbar-right">
+                    <button class="topbar-icon-btn" id="notif-btn">
+                        <i data-lucide="bell"></i>
+                        <span class="notif-dot"></span>
+                    </button>
+                    <div class="topbar-user" id="topbar-user">
+                        <div class="topbar-avatar" id="topbar-avatar">U</div>
+                        <span class="topbar-username" id="topbar-username">User</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Containers -->
+            <div class="page-content">
+                <!-- Dashboard Page -->
+                <section id="page-dashboard" class="app-page active">
+                    <div class="dashboard-grid">
+                        <div class="dash-card stat-card" id="stat-total">
+                            <div class="stat-icon-wrap gold">
+                                <i data-lucide="package"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Total Orders</span>
+                                <span class="stat-value" id="dash-total-orders">—</span>
+                            </div>
+                            <div class="stat-trend" id="dash-total-trend"></div>
+                        </div>
+                        <div class="dash-card stat-card" id="stat-active">
+                            <div class="stat-icon-wrap blue">
+                                <i data-lucide="truck"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Active Shipments</span>
+                                <span class="stat-value" id="dash-active-orders">—</span>
+                            </div>
+                            <div class="stat-trend" id="dash-active-trend"></div>
+                        </div>
+                        <div class="dash-card stat-card" id="stat-delivered">
+                            <div class="stat-icon-wrap teal">
+                                <i data-lucide="check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Delivered</span>
+                                <span class="stat-value" id="dash-delivered-orders">—</span>
+                            </div>
+                            <div class="stat-trend" id="dash-delivered-trend"></div>
+                        </div>
+                        <div class="dash-card stat-card" id="stat-spent">
+                            <div class="stat-icon-wrap orange">
+                                <i data-lucide="credit-card"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Total Spent</span>
+                                <span class="stat-value" id="dash-total-spent">—</span>
+                            </div>
+                            <div class="stat-trend" id="dash-spent-trend"></div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-bottom">
+                        <div class="dash-card recent-orders-card">
+                            <div class="card-header">
+                                <h3>Recent Orders</h3>
+                                <a href="#orders" class="card-link">View All <i data-lucide="arrow-right"></i></a>
+                            </div>
+                            <div class="recent-orders-list" id="recent-orders-list">
+                                <div class="empty-state-mini">
+                                    <i data-lucide="inbox"></i>
+                                    <p>Loading orders...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dash-card activity-card">
+                            <div class="card-header">
+                                <h3>Quick Actions</h3>
+                            </div>
+                            <div class="quick-actions">
+                                <a href="#create-order" class="quick-action-btn">
+                                    <i data-lucide="plus-circle"></i>
+                                    <span>New Order</span>
+                                </a>
+                                <a href="#tracking" class="quick-action-btn">
+                                    <i data-lucide="map-pin"></i>
+                                    <span>Track Package</span>
+                                </a>
+                                <a href="#profile" class="quick-action-btn">
+                                    <i data-lucide="user-circle"></i>
+                                    <span>My Profile</span>
+                                </a>
+                                <a href="#orders" class="quick-action-btn">
+                                    <i data-lucide="package"></i>
+                                    <span>All Orders</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Orders Page -->
+                <section id="page-orders" class="app-page">
+                    <div class="page-top-bar">
+                        <div class="search-wrapper">
+                            <i data-lucide="search"></i>
+                            <input type="text" id="orders-search" placeholder="Search orders..." class="search-input">
+                        </div>
+                        <div class="filter-group">
+                            <select id="orders-filter" class="filter-select">
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="picked_up">Picked Up</option>
+                                <option value="in_transit">In Transit</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="orders-list" class="orders-list">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Loading your orders...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Order Detail Page -->
+                <section id="page-order-detail" class="app-page">
+                    <div id="order-detail-content">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Loading order details...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Create Order Page -->
+                <section id="page-create-order" class="app-page">
+                    <div class="form-card">
+                        <div class="form-card-header">
+                            <h3><i data-lucide="plus-circle"></i> Create New Order</h3>
+                            <p>Fill in the details to schedule a shipment</p>
+                        </div>
+                        <form id="create-order-form" novalidate>
+                            <div class="form-section">
+                                <h4 class="form-section-title"><i data-lucide="map-pin"></i> Pickup Details</h4>
+                                <div class="form-group">
+                                    <label for="pickup-address">Pickup Address</label>
+                                    <div class="input-wrapper">
+                                        <i data-lucide="home" class="input-icon"></i>
+                                        <input type="text" id="pickup-address" placeholder="Enter pickup address" required>
+                                    </div>
+                                    <span class="field-error" id="pickup-address-error"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h4 class="form-section-title"><i data-lucide="navigation"></i> Dropoff Details</h4>
+                                <div class="form-group">
+                                    <label for="dropoff-address">Dropoff Address</label>
+                                    <div class="input-wrapper">
+                                        <i data-lucide="map-pin" class="input-icon"></i>
+                                        <input type="text" id="dropoff-address" placeholder="Enter delivery address" required>
+                                    </div>
+                                    <span class="field-error" id="dropoff-address-error"></span>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="recipient-name">Recipient Name</label>
+                                        <div class="input-wrapper">
+                                            <i data-lucide="user" class="input-icon"></i>
+                                            <input type="text" id="recipient-name" placeholder="Recipient's name" required>
+                                        </div>
+                                        <span class="field-error" id="recipient-name-error"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="recipient-phone">Recipient Phone</label>
+                                        <div class="input-wrapper">
+                                            <i data-lucide="phone" class="input-icon"></i>
+                                            <input type="tel" id="recipient-phone" placeholder="+234 800 000 0000" required>
+                                        </div>
+                                        <span class="field-error" id="recipient-phone-error"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h4 class="form-section-title"><i data-lucide="package"></i> Package Details</h4>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="package-type">Package Type</label>
+                                        <div class="input-wrapper">
+                                            <i data-lucide="box" class="input-icon"></i>
+                                            <select id="package-type" required>
+                                                <option value="">Select type</option>
+                                                <option value="document">Document</option>
+                                                <option value="small">Small Package</option>
+                                                <option value="medium">Medium Package</option>
+                                                <option value="large">Large Package</option>
+                                                <option value="fragile">Fragile Item</option>
+                                                <option value="food">Food / Perishable</option>
+                                            </select>
+                                        </div>
+                                        <span class="field-error" id="package-type-error"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="package-weight">Weight (kg)</label>
+                                        <div class="input-wrapper">
+                                            <i data-lucide="scale" class="input-icon"></i>
+                                            <input type="number" id="package-weight" placeholder="0.5" min="0.1" step="0.1" required>
+                                        </div>
+                                        <span class="field-error" id="package-weight-error"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h4 class="form-section-title"><i data-lucide="file-text"></i> Additional</h4>
+                                <div class="form-group">
+                                    <label for="instructions">Special Instructions</label>
+                                    <div class="input-wrapper textarea-wrapper">
+                                        <textarea id="instructions" placeholder="Any special handling instructions..." rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="order-summary-preview" id="order-summary-preview" style="display:none;">
+                                <h4>Estimated Cost</h4>
+                                <div class="summary-row">
+                                    <span>Distance</span>
+                                    <span id="est-distance">—</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Price</span>
+                                    <span id="est-price" class="price-highlight">—</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary btn-full" id="create-order-btn">
+                                <span class="btn-text">Create Order</span>
+                                <span class="btn-loader" style="display:none;"></span>
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Tracking Page -->
+                <section id="page-tracking" class="app-page">
+                    <div class="tracking-search-card">
+                        <h3><i data-lucide="search"></i> Track Your Shipment</h3>
+                        <p>Enter your order ID to see real-time tracking updates</p>
+                        <form id="tracking-search-form" class="tracking-search-form">
+                            <div class="input-wrapper">
+                                <i data-lucide="hash" class="input-icon"></i>
+                                <input type="text" id="tracking-order-id" placeholder="Enter Order ID" required>
+                            </div>
+                            <button type="submit" class="btn-primary">
+                                <i data-lucide="search"></i>
+                                <span>Track</span>
+                            </button>
+                        </form>
+                    </div>
+                    <div id="tracking-result" class="tracking-result" style="display:none;">
+                        <!-- Tracking result will be injected here -->
+                    </div>
+                </section>
+
+                <!-- Profile Page -->
+                <section id="page-profile" class="app-page">
+                    <div id="profile-content">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Loading profile...</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="api.js"></script>
+    <script src="ui.js"></script>
+    <script src="auth.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="orders.js"></script>
+    <script src="tracking.js"></script>
+    <script src="profile.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

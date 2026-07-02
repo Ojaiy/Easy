@@ -1,0 +1,125 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+
+    min-height: 100vh;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background:
+    linear-gradient(
+        135deg,
+        #0f172a,
+        #1e293b
+    );
+
+    font-family:
+    Arial,
+    sans-serif;
+}
+
+.container {
+
+    width: 100%;
+
+    max-width: 500px;
+
+    padding: 20px;
+}
+
+.card {
+
+    background: white;
+
+    padding: 50px;
+
+    border-radius: 24px;
+
+    text-align: center;
+
+    box-shadow:
+    0 20px 60px
+    rgba(0,0,0,.2);
+}
+
+.icon {
+
+    font-size: 80px;
+
+    margin-bottom: 20px;
+}
+
+.rejected {
+
+    color: #dc2626;
+}
+
+h1 {
+
+    margin-bottom: 20px;
+}
+
+p {
+
+    color: #64748b;
+
+    margin-bottom: 15px;
+
+    line-height: 1.7;
+}
+
+.status-box {
+
+    background: #fef3c7;
+
+    color: #92400e;
+
+    padding: 15px;
+
+    border-radius: 12px;
+
+    margin: 25px 0;
+
+    font-weight: bold;
+}
+
+.rejected-box {
+
+    background: #fee2e2;
+
+    color: #991b1b;
+}
+
+.small {
+
+    font-size: 14px;
+}
+
+button {
+
+    width: 100%;
+
+    margin-top: 20px;
+
+    border: none;
+
+    background: #2563eb;
+
+    color: white;
+
+    padding: 15px;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    font-size: 16px;
+}
