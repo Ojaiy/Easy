@@ -88,21 +88,29 @@ const Auth = (() => {
         try {
             const response = await API.signin({ email, password });
 
-            // ✅ NEW: Handle unapproved riders (403)
+            // ✅ Handle 403 (pending/rejected/suspended rider)
             if (response.status === 403) {
                 UI.showToast(response.message || 'Your account is pending approval. Please wait for admin confirmation.', 'error');
                 UI.setButtonLoading(btn, false);
                 return;
             }
 
-            // The API should return { token, user } or similar
-            const token = response.token || response.data?.token || '';
-            const user = response.user || response.data?.user || response.data || {};
+            // ✅ Handle other non-200 responses
+            if (!response.ok || response.status !== 200) {
+                UI.showToast(response.message || 'Sign in failed. Please try again.', 'error');
+                UI.setButtonLoading(btn, false);
+                return;
+            }
+
+            // ✅ Success - get token and user
+            const token = response.token;
+            const user = response.user || response.data || {};
 
             if (token) {
                 API.saveAuth(token, user);
                 UI.showToast('Welcome back! Signed in successfully.', 'success');
 
+                // ✅ Redirect if backend provides redirectPage
                 if (response.redirectPage) {
                     window.location.href = response.redirectPage;
                     return;
@@ -110,18 +118,16 @@ const Auth = (() => {
 
                 App.onAuthSuccess();
             } else {
+                // Fallback if no token but response was ok
                 UI.showToast('Sign in successful.', 'success');
-                // Try to save what we can
-                API.saveAuth('session', user);
+                if (user && user.id) {
+                    API.saveAuth('session', user);
+                }
                 App.onAuthSuccess();
             }
         } catch (error) {
-            // Check if error response has status 403
-            if (error.status === 403) {
-                UI.showToast(error.message || 'Your account is pending approval. Please wait for admin confirmation.', 'error');
-            } else {
-                UI.showToast(error.message || 'Sign in failed. Please try again.', 'error');
-            }
+            // Handle network or other errors
+            UI.showToast(error.message || 'Sign in failed. Please try again.', 'error');
         } finally {
             UI.setButtonLoading(btn, false);
         }

@@ -60,46 +60,31 @@ const API = (() => {
             config.body = JSON.stringify(config.body);
         }
 
-        try {
-            const response = await fetch(url, config);
-            const data = await response.json();
+        const response = await fetch(url, config);
+        const data = await response.json();
 
-            if (!response.ok) {
-                throw {
-                    status: response.status,
-                    message: data.message || data.error || 'Request failed',
-                    data: data,
-                };
-            }
-
-            return data;
-        } catch (error) {
-            if (error.status) throw error;
-            // Network error
-            throw {
-                status: 0,
-                message: 'Network error. Please check your connection and ensure the server is running.',
-                data: null,
-            };
-        }
+        // ✅ Return EVERYTHING — let caller handle status
+        return {
+            status: response.status,
+            ok: response.ok,
+            ...data
+        };
     };
 
     // ==================== AUTH ENDPOINTS ====================
 
     const signup = async (userData) => {
-        const data = await request('/userSignup', {
+        return await request('/userSignup', {
             method: 'POST',
             body: userData,
         });
-        return data;
     };
 
     const signin = async (credentials) => {
-        const data = await request('/userSignin', {
+        return await request('/userSignin', {
             method: 'POST',
             body: credentials,
         });
-        return data;
     };
 
     const signout = async () => {
@@ -112,56 +97,48 @@ const API = (() => {
     };
 
     const getProfile = async (userId) => {
-        const data = await request(`/profile/${userId}`);
-        return data;
+        return await request(`/profile/${userId}`);
     };
 
     // ==================== ORDER ENDPOINTS ====================
 
     const createOrder = async (orderData) => {
-        const data = await request('/createOrder', {
+        return await request('/createOrder', {
             method: 'POST',
             body: orderData,
         });
-        return data;
     };
 
     const getOrders = async (customerId) => {
-        const data = await request(`/orders/${customerId}`);
-        return data;
+        return await request(`/orders/${customerId}`);
     };
 
     const getOrder = async (orderId) => {
-        const data = await request(`/order/${orderId}`);
-        return data;
+        return await request(`/order/${orderId}`);
     };
 
     const getDashboard = async (customerId) => {
-        const data = await request(`/dashboard/${customerId}`);
-        return data;
+        return await request(`/dashboard/${customerId}`);
     };
 
     // ==================== TRACKING ENDPOINTS ====================
 
     const startTracking = async (trackingData) => {
-        const data = await request('/start', {
+        return await request('/start', {
             method: 'POST',
             body: trackingData,
         });
-        return data;
     };
 
     const updateTracking = async (trackingData) => {
-        const data = await request('/update', {
+        return await request('/update', {
             method: 'POST',
             body: trackingData,
         });
-        return data;
     };
 
     const getTracking = async (orderId) => {
-        const data = await request(`/${orderId}`);
-        return data;
+        return await request(`/${orderId}`);
     };
 
     return {
