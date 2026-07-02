@@ -4,7 +4,7 @@
  */
 
 const API = (() => {
-    const BASE_URL = 'http://localhost:5000/api/v1';
+    const BASE_URL = 'https://easyshipp.onrender.com/api/v1';
 
     /**
      * Get the auth token from localStorage

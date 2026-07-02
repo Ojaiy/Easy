@@ -1,7 +1,7 @@
 /**
  * RIDER DASHBOARD - EASYSHIP NG
  */
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+const API_BASE_URL = 'https://easyshipp.onrender.com/api/v1';
 
 let token = null;
 let rider = null;

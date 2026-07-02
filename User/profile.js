@@ -156,7 +156,7 @@ const Profile = (() => {
 
         try {
             // Attempt to update - if there's no endpoint, this will fail gracefully
-            const response = await fetch(`http://localhost:5000/api/v1/profile/${userId}`, {
+            const response = await fetch(`https://easyshipp.onrender.com/api/v1/profile/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
