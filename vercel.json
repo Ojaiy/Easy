@@ -1,6 +1,21 @@
 {
-    "rewrites": [
-        { "source": "/", "destination": "/User/index.html" },
-        { "source": "/(.*)", "destination": "/$1" }
+    "routes": [
+        { "src": "/", "dest": "/User/index.html" },
+        { "src": "/style.css", "dest": "/User/style.css" },
+        { "src": "/api.js", "dest": "/User/api.js" },
+        { "src": "/ui.js", "dest": "/User/ui.js" },
+        { "src": "/orders.js", "dest": "/User/orders.js" },
+        { "src": "/app.js", "dest": "/User/app.js" },
+        { "src": "/auth.js", "dest": "/User/auth.js" },
+        { "src": "/profile.js", "dest": "/User/profile.js" },
+        { "src": "/dashboard.js", "dest": "/User/dashboard.js" },
+        { "src": "/tracking.js", "dest": "/User/tracking.js" },
+        { "src": "/EasyLogo.png", "dest": "/User/EasyLogo.png" },
+        { "src": "/socket.io/(.*)", "dest": "https://easyshipp.onrender.com/socket.io/$1" },
+        { "src": "/api/(.*)", "dest": "https://easyshipp.onrender.com/api/$1" },
+        { "src": "/User/(.*)", "dest": "/User/$1" },
+        { "src": "/Admin/(.*)", "dest": "/Admin/$1" },
+        { "src": "/Rider/(.*)", "dest": "/Rider/$1" },
+        { "src": "/(.*)", "dest": "/User/index.html" }
     ]
 }
