@@ -16,35 +16,30 @@ const Auth = (() => {
             showSigninForm();
         });
 
-        // Toggle password visibility - FIXED for mobile and PC
-        document.querySelectorAll('.toggle-password').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const targetId = this.dataset.target;
-                const input = document.getElementById(targetId);
-                if (!input) return;
-                
-                const isPassword = input.type === 'password';
-                input.type = isPassword ? 'text' : 'password';
-                
-                // Update icon manually
-                const icon = this.querySelector('i');
-                if (icon) {
-                    if (isPassword) {
-                        icon.className = 'fa-regular fa-eye-slash';
-                        icon.setAttribute('data-lucide', 'eye-off');
-                    } else {
-                        icon.className = 'fa-regular fa-eye';
-                        icon.setAttribute('data-lucide', 'eye');
-                    }
-                }
-                
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
-            });
-        });
+        // Toggle password visibility - REAL FIX
+document.querySelectorAll('.toggle-password').forEach(btn => {
+    const toggle = function(e) {
+        e.preventDefault();
+        const input = document.getElementById(this.dataset.target);
+        if (!input) return;
+        
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        
+        // Force icon update
+        const icon = this.querySelector('i');
+        if (icon) {
+            const iconName = isPassword ? 'eye-off' : 'eye';
+            icon.setAttribute('data-lucide', iconName);
+            if (typeof lucide !== 'undefined') {
+                setTimeout(() => lucide.createIcons(), 50);
+            }
+        }
+    };
+    
+    btn.addEventListener('click', toggle);
+    btn.addEventListener('touchstart', toggle, { passive: true });
+});
 
         // Sign In form submission
         document.getElementById('signin-form-el').addEventListener('submit', handleSignin);

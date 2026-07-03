@@ -2157,18 +2157,22 @@ button, .btn-primary, .btn-secondary, .btn-danger, .nav-item, .quick-action-btn 
    FIX #2 - Mobile bottom bar fix
    ======================================== */
 
-/* Fix for sign out button being covered by Chrome bottom bar */
-@media (max-width: 768px) {
+.sidebar-footer {
+    padding: 12px 10px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    margin-top: auto;
+}
+
+/* THIS is what actually fixes it */
+@media (max-width: 900px) {
     .sidebar {
-        padding-bottom: env(safe-area-inset-bottom, 30px);
+        height: 100vh;
+        height: 100dvh; /* Dynamic viewport height - fixes Chrome */
+        overflow-y: auto;
+        padding-bottom: 80px; /* Extra space for Chrome bar */
     }
     
     .sidebar-footer {
-        padding: 12px 10px 40px;
-        margin-bottom: env(safe-area-inset-bottom, 10px);
-    }
-    
-    .sidebar-footer .nav-item:last-child {
-        margin-bottom: 5px;
+        padding-bottom: 60px;
     }
 }
