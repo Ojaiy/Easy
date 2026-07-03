@@ -18,27 +18,24 @@ const Auth = (() => {
 
         // Toggle password visibility - REAL FIX
 document.querySelectorAll('.toggle-password').forEach(btn => {
-    const toggle = function(e) {
+    btn.addEventListener('click', function(e) {
         e.preventDefault();
+        e.stopPropagation();
+
         const input = document.getElementById(this.dataset.target);
         if (!input) return;
-        
+
         const isPassword = input.type === 'password';
         input.type = isPassword ? 'text' : 'password';
-        
-        // Force icon update
+
         const icon = this.querySelector('i');
         if (icon) {
-            const iconName = isPassword ? 'eye-off' : 'eye';
-            icon.setAttribute('data-lucide', iconName);
+            icon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
             if (typeof lucide !== 'undefined') {
-                setTimeout(() => lucide.createIcons(), 50);
+                lucide.createIcons();
             }
         }
-    };
-    
-    btn.addEventListener('click', toggle);
-    btn.addEventListener('touchstart', toggle, { passive: true });
+    });
 });
 
         // Sign In form submission
