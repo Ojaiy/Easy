@@ -1,173 +1,87 @@
 /**
  * Authentication Module for EASYSHIP NG
- * Enhanced with:
- * - Better validation
- * - Role-based redirects
- * - Session management
- * - Auto-login detection
- * - Better error handling
  */
 
 const Auth = (() => {
 
-    // ========================================
-    // Configuration
-    // ========================================
-    
-    const ROLES = {
-        CUSTOMER: 'customer',
-        RIDER: 'rider',
-        ADMIN: 'admin'
-    };
-
-    const REDIRECTS = {
-        [ROLES.CUSTOMER]: '/User/index.html',
-        [ROLES.RIDER]: '/Rider/rider-dashboard.html',
-        [ROLES.ADMIN]: '/Admin/index.html'
-    };
-
-    // ========================================
-    // Initialization
-    // ========================================
-    
-    /**
-     * Initialize auth event listeners
-     */
     const init = () => {
         // Switch between forms
-        const gotoSignup = document.getElementById('goto-signup');
-        const gotoSignin = document.getElementById('goto-signin');
-        
-        if (gotoSignup) {
-            gotoSignup.addEventListener('click', (e) => {
+        document.getElementById('goto-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            showSignupForm();
+        });
+
+        document.getElementById('goto-signin').addEventListener('click', (e) => {
+            e.preventDefault();
+            showSigninForm();
+        });
+
+        // Toggle password visibility - FIXED for mobile and PC
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', function(e) {
                 e.preventDefault();
-                showSignupForm();
-            });
-        }
-
-        if (gotoSignin) {
-            gotoSignin.addEventListener('click', (e) => {
-                e.preventDefault();
-                showSigninForm();
-            });
-        }
-
-        // Toggle password visibility
-document.querySelectorAll('.toggle-password').forEach(btn => {
-    const togglePassword = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const targetId = btn.dataset.target;
-        const input = document.getElementById(targetId);
-        if (input) {
-            const isPassword = input.type === 'password';
-            input.type = isPassword ? 'text' : 'password';
-            const iconEl = btn.querySelector('[data-lucide]');
-            if (iconEl) {
-                iconEl.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons({ nodes: [btn] });
-                }
-            }
-        }
-    };
-    
-    // Both click AND touch for mobile
-    btn.addEventListener('click', togglePassword);
-    btn.addEventListener('touchstart', togglePassword, { passive: true });
-});
-
-        // Sign In form submission
-        const signinForm = document.getElementById('signin-form-el');
-        if (signinForm) {
-            signinForm.addEventListener('submit', handleSignin);
-        }
-
-        // Sign Up form submission
-        const signupForm = document.getElementById('signup-form-el');
-        if (signupForm) {
-            signupForm.addEventListener('submit', handleSignup);
-        }
-
-        // Sign Out button
-        const signoutBtn = document.getElementById('signout-btn');
-        if (signoutBtn) {
-            signoutBtn.addEventListener('click', handleSignout);
-        }
-
-        // Enter key support for forms
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                const activeForm = document.querySelector('.auth-form.active form');
-                if (activeForm) {
-                    const submitBtn = activeForm.querySelector('button[type="submit"]');
-                    if (submitBtn && !submitBtn.disabled) {
-                        e.preventDefault();
-                        submitBtn.click();
+                e.stopPropagation();
+                const targetId = this.dataset.target;
+                const input = document.getElementById(targetId);
+                if (!input) return;
+                
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                
+                // Update icon manually
+                const icon = this.querySelector('i');
+                if (icon) {
+                    if (isPassword) {
+                        icon.className = 'fa-regular fa-eye-slash';
+                        icon.setAttribute('data-lucide', 'eye-off');
+                    } else {
+                        icon.className = 'fa-regular fa-eye';
+                        icon.setAttribute('data-lucide', 'eye');
                     }
                 }
-            }
+                
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            });
         });
+
+        // Sign In form submission
+        document.getElementById('signin-form-el').addEventListener('submit', handleSignin);
+
+        // Sign Up form submission
+        document.getElementById('signup-form-el').addEventListener('submit', handleSignup);
+
+        // Sign Out button
+        document.getElementById('signout-btn').addEventListener('click', handleSignout);
 
         // Check for existing session
         checkSession();
     };
 
-    // ========================================
-    // Form Navigation
-    // ========================================
-    
     const showSigninForm = () => {
-        const signinForm = document.getElementById('signin-form');
-        const signupForm = document.getElementById('signup-form');
-        if (signinForm) signinForm.classList.add('active');
-        if (signupForm) signupForm.classList.remove('active');
-        
-        // Clear errors
-        const form = document.getElementById('signin-form-el');
-        if (form) clearFormErrors(form);
-        
-        // Focus first input
-        const firstInput = document.getElementById('signin-email');
-        if (firstInput) setTimeout(() => firstInput.focus(), 100);
+        document.getElementById('signin-form').classList.add('active');
+        document.getElementById('signup-form').classList.remove('active');
+        clearFormErrors('signin-form-el');
     };
 
     const showSignupForm = () => {
-        const signinForm = document.getElementById('signin-form');
-        const signupForm = document.getElementById('signup-form');
-        if (signinForm) signinForm.classList.remove('active');
-        if (signupForm) signupForm.classList.add('active');
-        
-        // Clear errors
-        const form = document.getElementById('signup-form-el');
-        if (form) clearFormErrors(form);
-        
-        // Focus first input
-        const firstInput = document.getElementById('signup-name');
-        if (firstInput) setTimeout(() => firstInput.focus(), 100);
+        document.getElementById('signup-form').classList.add('active');
+        document.getElementById('signin-form').classList.remove('active');
+        clearFormErrors('signup-form-el');
     };
 
-    // ========================================
-    // Form Helpers
-    // ========================================
-    
-    const clearFormErrors = (form) => {
+    const clearFormErrors = (formId) => {
+        const form = document.getElementById(formId);
         if (!form) return;
-        const errorElements = form.querySelectorAll('.field-error');
-        errorElements.forEach(el => el.textContent = '');
-        
-        const inputs = form.querySelectorAll('input, select, textarea');
-        inputs.forEach(el => el.classList.remove('error'));
+        form.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+        form.querySelectorAll('input, select, textarea').forEach(el => el.classList.remove('error'));
     };
 
     const setFieldError = (fieldId, message) => {
-        const field = document.getElementById(fieldId);
-        if (field) field.classList.add('error');
-        
+        document.getElementById(fieldId)?.classList.add('error');
         const errorEl = document.getElementById(`${fieldId}-error`);
-        if (errorEl) {
-            errorEl.textContent = message || '';
-        }
+        if (errorEl) errorEl.textContent = message;
     };
 
     const validateEmail = (email) => {
@@ -190,9 +104,7 @@ document.querySelectorAll('.toggle-password').forEach(btn => {
                 textSpan.textContent = 'Please wait...';
                 loaderSpan.style.display = 'inline-block';
             } else {
-                // Restore original text from data attribute
-                const originalText = btn.dataset.originalText || 'Submit';
-                textSpan.textContent = originalText;
+                textSpan.textContent = btn.dataset.originalText || 'Submit';
                 loaderSpan.style.display = 'none';
             }
         }
@@ -202,207 +114,131 @@ document.querySelectorAll('.toggle-password').forEach(btn => {
         if (typeof UI !== 'undefined' && UI.showToast) {
             UI.showToast(message, type);
         } else {
-            // Fallback toast
-            const container = document.getElementById('toast-container');
-            if (container) {
-                const toast = document.createElement('div');
-                toast.className = `toast ${type}`;
-                toast.innerHTML = `
-                    <span class="toast-message">${message}</span>
-                    <button class="toast-close">&times;</button>
-                `;
-                container.appendChild(toast);
-                setTimeout(() => {
-                    if (toast.parentNode) toast.remove();
-                }, 3000);
-            } else {
-                alert(message);
-            }
+            alert(message);
         }
     };
 
-    // ========================================
-    // Session Management
-    // ========================================
-    
+    // FIX #1 - Fixed checkSession to properly handle back button
     const checkSession = () => {
-    const token = API.getToken();
-    const user = API.getUser();
-    
-    if (token && user) {
-        updateAuthUI(user);
-        const authPage = document.getElementById('auth-page');
-        const appShell = document.getElementById('app-shell');
-        if (authPage) authPage.classList.remove('active');
-        if (appShell) appShell.classList.add('active');
+        const token = API.getToken();
+        const user = API.getUser();
         
+        if (token && user) {
+            updateAuthUI(user);
+            const authPage = document.getElementById('auth-page');
+            const appShell = document.getElementById('app-shell');
+            if (authPage) authPage.classList.remove('active');
+            if (appShell) appShell.classList.add('active');
+            
+            // Redirect based on role
+            const role = user.role || 'customer';
+            const redirects = {
+                'customer': '/User/index.html',
+                'rider': '/Rider/rider-dashboard.html',
+                'admin': '/Admin/index.html'
+            };
+            const currentPath = window.location.pathname;
+            const targetPath = redirects[role] || redirects['customer'];
+            
+            // Only redirect if not already on the right page
+            const targetFile = targetPath.split('/').pop();
+            const currentFile = currentPath.split('/').pop() || 'index.html';
+            if (currentFile !== targetFile && !currentPath.includes('/Admin/') && !currentPath.includes('/Rider/')) {
+                window.location.href = targetPath;
+            }
+            return true;
+        }
+        return false;
+    };
+
+    const updateAuthUI = (user) => {
+        const username = document.getElementById('topbar-username');
+        if (username) username.textContent = user.name || user.email || 'User';
+        const avatar = document.getElementById('topbar-avatar');
+        if (avatar) avatar.textContent = (user.name || user.email || 'U')[0].toUpperCase();
+    };
+
+    const redirectBasedOnRole = (user) => {
+        if (!user) return;
         const role = user.role || 'customer';
         const redirects = {
             'customer': '/User/index.html',
             'rider': '/Rider/rider-dashboard.html',
             'admin': '/Admin/index.html'
         };
-        const currentPath = window.location.pathname;
-        const targetPath = redirects[role] || redirects['customer'];
-        
-        // ONLY redirect if NOT already on the right page
-        if (!currentPath.includes(targetPath.replace('/', ''))) {
-            window.location.href = targetPath;
-        }
-        return true;
-    }
-    return false;
-};
-
-    const updateAuthUI = (user) => {
-        if (!user) return;
-        
-        // Update topbar
-        const username = document.getElementById('topbar-username');
-        if (username) {
-            username.textContent = user.name || user.email || 'User';
-        }
-        
-        const avatar = document.getElementById('topbar-avatar');
-        if (avatar) {
-            const initial = (user.name || user.email || 'U')[0].toUpperCase();
-            avatar.textContent = initial;
-        }
-        
-        // Show app shell, hide auth
-        const authPage = document.getElementById('auth-page');
-        const appShell = document.getElementById('app-shell');
-        
-        if (authPage) authPage.classList.remove('active');
-        if (appShell) appShell.classList.add('active');
+        window.location.href = redirects[role] || redirects['customer'];
     };
 
-    const redirectBasedOnRole = (user) => {
-        if (!user) return;
-        
-        // Check if user has a role
-        const role = user.role || user.userType || 'customer';
-        const redirectPath = REDIRECTS[role] || REDIRECTS[ROLES.CUSTOMER];
-        
-        // Don't redirect if already on the right page
-        const currentPath = window.location.pathname;
-        const targetPath = new URL(redirectPath, window.location.origin).pathname;
-        
-        if (currentPath !== targetPath) {
-            window.location.href = redirectPath;
-        }
-    };
-
-    // ========================================
-    // Handle Sign In
-    // ========================================
-    
     const handleSignin = async (e) => {
-    e.preventDefault();
-    clearFormErrors(e.target);
+        e.preventDefault();
+        clearFormErrors('signin-form-el');
 
-    // FIX #4: Clean values for mobile (remove hidden characters)
-    let email = document.getElementById('signin-email').value.trim().toLowerCase();
-    let password = document.getElementById('signin-password').value;
-    
-    // Remove invisible/hidden characters mobile might add
-    password = password.replace(/\u200B/g, '').replace(/\u00A0/g, ' ').trim();
-    email = email.replace(/\u200B/g, '').replace(/\u00A0/g, ' ').trim();
+        const email = document.getElementById('signin-email').value.trim();
+        const password = document.getElementById('signin-password').value;
 
-    let hasError = false;
+        let hasError = false;
 
-    if (!email) {
-        setFieldError('signin-email', 'Email is required');
-        hasError = true;
-    } else if (!validateEmail(email)) {
-        setFieldError('signin-email', 'Enter a valid email address');
-        hasError = true;
-    }
-
-    if (!password) {
-        setFieldError('signin-password', 'Password is required');
-        hasError = true;
-    } else if (password.length < 6) {
-        setFieldError('signin-password', 'Password must be at least 6 characters');
-        hasError = true;
-    }
-
-    if (hasError) return;
-
-    const btn = document.getElementById('signin-btn');
-    btn.dataset.originalText = btn.textContent;
-    setButtonLoading(btn, true);
-
-    try {
-        const response = await API.signin({ email, password });
-
-        // Handle 403 (pending/rejected/suspended rider)
-        if (response.status === 403) {
-            showToast(response.message || 'Your account is pending approval. Please wait for admin confirmation.', 'warning');
-            setButtonLoading(btn, false);
-            return;
+        if (!email) {
+            setFieldError('signin-email', 'Email is required');
+            hasError = true;
+        } else if (!validateEmail(email)) {
+            setFieldError('signin-email', 'Enter a valid email address');
+            hasError = true;
         }
 
-        // Handle other non-200 responses
-        if (!response.ok || response.status !== 200) {
-            showToast(response.message || 'Sign in failed. Please try again.', 'error');
-            setButtonLoading(btn, false);
-            return;
+        if (!password) {
+            setFieldError('signin-password', 'Password is required');
+            hasError = true;
         }
 
-        // Success - get token and user
-        const token = response.token;
-        const user = response.user || response.data || {};
+        if (hasError) return;
 
-        if (token) {
-            API.saveAuth(token, user);
-            showToast('Welcome back! Signed in successfully.', 'success');
+        const btn = document.getElementById('signin-btn');
+        btn.dataset.originalText = btn.textContent;
+        setButtonLoading(btn, true);
 
-            if (response.redirectPage) {
-                setTimeout(() => {
-                    window.location.href = response.redirectPage;
-                }, 500);
+        try {
+            const response = await API.signin({ email, password });
+
+            if (response.status === 403) {
+                showToast(response.message || 'Account pending approval.', 'warning');
+                setButtonLoading(btn, false);
                 return;
             }
 
-            updateAuthUI(user);
-            setTimeout(() => {
-                redirectBasedOnRole(user);
-            }, 500);
-            
-        } else {
-            showToast('Sign in successful.', 'success');
-            if (user && user.id) {
-                API.saveAuth('session', user);
+            if (!response.ok) {
+                showToast(response.message || 'Sign in failed.', 'error');
+                setButtonLoading(btn, false);
+                return;
             }
-            updateAuthUI(user);
-            setTimeout(() => {
-                redirectBasedOnRole(user);
-            }, 500);
-        }
-    } catch (error) {
-        console.error('Signin error:', error);
-        const errorMessage = error.message || 'Sign in failed. Please try again.';
-        
-        if (errorMessage.toLowerCase().includes('password')) {
-            setFieldError('signin-password', 'Invalid password');
-        } else if (errorMessage.toLowerCase().includes('email') || errorMessage.toLowerCase().includes('user')) {
-            setFieldError('signin-email', 'Account not found');
-        } else {
-            showToast(errorMessage, 'error');
-        }
-    } finally {
-        setButtonLoading(btn, false);
-    }
-};
 
-    // ========================================
-    // Handle Sign Up
-    // ========================================
-    
+            const token = response.token;
+            const user = response.user || response.data || {};
+
+            if (token) {
+                API.saveAuth(token, user);
+                showToast('Welcome back!', 'success');
+                if (response.redirectPage) {
+                    window.location.href = response.redirectPage;
+                    return;
+                }
+                updateAuthUI(user);
+                const authPage = document.getElementById('auth-page');
+                const appShell = document.getElementById('app-shell');
+                if (authPage) authPage.classList.remove('active');
+                if (appShell) appShell.classList.add('active');
+                redirectBasedOnRole(user);
+            }
+        } catch (error) {
+            showToast(error.message || 'Sign in failed.', 'error');
+        } finally {
+            setButtonLoading(btn, false);
+        }
+    };
+
     const handleSignup = async (e) => {
         e.preventDefault();
-        clearFormErrors(e.target);
+        clearFormErrors('signup-form-el');
 
         const name = document.getElementById('signup-name').value.trim();
         const email = document.getElementById('signup-email').value.trim();
@@ -413,9 +249,6 @@ document.querySelectorAll('.toggle-password').forEach(btn => {
 
         if (!name) {
             setFieldError('signup-name', 'Full name is required');
-            hasError = true;
-        } else if (name.length < 2) {
-            setFieldError('signup-name', 'Name must be at least 2 characters');
             hasError = true;
         }
 
@@ -431,7 +264,7 @@ document.querySelectorAll('.toggle-password').forEach(btn => {
             setFieldError('signup-phone', 'Phone number is required');
             hasError = true;
         } else if (!validatePhone(phone)) {
-            setFieldError('signup-phone', 'Enter a valid phone number (10-14 digits)');
+            setFieldError('signup-phone', 'Enter a valid phone number');
             hasError = true;
         }
 
@@ -453,7 +286,7 @@ document.querySelectorAll('.toggle-password').forEach(btn => {
             const response = await API.signup({ name, email, phone, password });
 
             if (!response.ok) {
-                showToast(response.message || 'Sign up failed. Please try again.', 'error');
+                showToast(response.message || 'Sign up failed.', 'error');
                 setButtonLoading(btn, false);
                 return;
             }
@@ -463,117 +296,50 @@ document.querySelectorAll('.toggle-password').forEach(btn => {
 
             if (token) {
                 API.saveAuth(token, user);
-                showToast('Account created successfully! Welcome to EASYSHIP NG.', 'success');
-                updateAuthUI(user);
-                setTimeout(() => {
-                    redirectBasedOnRole(user);
-                }, 500);
+                showToast('Account created!', 'success');
+                const authPage = document.getElementById('auth-page');
+                const appShell = document.getElementById('app-shell');
+                if (authPage) authPage.classList.remove('active');
+                if (appShell) appShell.classList.add('active');
+                redirectBasedOnRole(user);
             } else {
                 showToast('Account created! Please sign in.', 'success');
                 showSigninForm();
-                const emailField = document.getElementById('signin-email');
-                if (emailField) emailField.value = email;
-                // Focus password field
-                const passwordField = document.getElementById('signin-password');
-                if (passwordField) setTimeout(() => passwordField.focus(), 300);
+                document.getElementById('signin-email').value = email;
             }
         } catch (error) {
-            console.error('Signup error:', error);
-            showToast(error.message || 'Sign up failed. Please try again.', 'error');
+            showToast(error.message || 'Sign up failed.', 'error');
         } finally {
             setButtonLoading(btn, false);
         }
     };
 
-    // ========================================
-    // Handle Sign Out
-    // ========================================
-    
-    const handleSignout = async (e) => {
-        if (e) e.preventDefault();
-        
-        // Confirm signout
-        if (!confirm('Are you sure you want to sign out?')) {
-            return;
-        }
-        
-        const btn = document.getElementById('signout-btn');
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = '<span>Signing out...</span>';
-        }
-        
-        try {
-            await API.signout();
-            showToast('You have been signed out.', 'info');
-            
-            // Reset UI
-            const appShell = document.getElementById('app-shell');
-            const authPage = document.getElementById('auth-page');
-            
-            if (appShell) appShell.classList.remove('active');
-            if (authPage) authPage.classList.add('active');
-            
-            // Show signin form
-            showSigninForm();
-            
-            // Clear form fields
-            const forms = ['signin-form-el', 'signup-form-el'];
-            forms.forEach(formId => {
-                const form = document.getElementById(formId);
-                if (form) {
-                    form.reset();
-                    clearFormErrors(form);
-                }
-            });
-            
-        } catch (error) {
-            console.error('Signout error:', error);
-            showToast('Error signing out. Please try again.', 'error');
-        } finally {
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = '<i data-lucide="log-out"></i><span>Sign Out</span>';
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
-            }
-        }
+    const handleSignout = async () => {
+        if (!confirm('Sign out?')) return;
+        await API.signout();
+        showToast('Signed out.', 'info');
+        const appShell = document.getElementById('app-shell');
+        const authPage = document.getElementById('auth-page');
+        if (appShell) appShell.classList.remove('active');
+        if (authPage) authPage.classList.add('active');
+        showSigninForm();
     };
 
-    // ========================================
-    // Public API
-    // ========================================
-    
     return {
         init,
         showSigninForm,
         showSignupForm,
         handleSignout,
-        checkSession,
-        updateAuthUI,
-        redirectBasedOnRole,
-        ROLES,
-        REDIRECTS
+        checkSession
     };
 })();
 
-// ========================================
-// Auto-initialize when DOM is ready
-// ========================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Wait for UI to be ready
     setTimeout(() => {
         try {
             Auth.init();
-            console.log('✅ Auth module initialized');
-        } catch (error) {
-            console.error('❌ Auth initialization error:', error);
+        } catch (e) {
+            console.error('Auth init error:', e);
         }
     }, 100);
 });
-
-// Make Auth globally available
-window.Auth = Auth;
-
-console.log('✅ Auth module loaded');
