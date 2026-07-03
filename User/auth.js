@@ -1,66 +1,298 @@
 /**
  * Authentication Module for EASYSHIP NG
+ * Enhanced with:
+ * - Better validation
+ * - Role-based redirects
+ * - Session management
+ * - Auto-login detection
+ * - Better error handling
  */
 
 const Auth = (() => {
 
+    // ========================================
+    // Configuration
+    // ========================================
+    
+    const ROLES = {
+        CUSTOMER: 'customer',
+        RIDER: 'rider',
+        ADMIN: 'admin'
+    };
+
+    const REDIRECTS = {
+        [ROLES.CUSTOMER]: '/User/index.html',
+        [ROLES.RIDER]: '/Rider/rider-dashboard.html',
+        [ROLES.ADMIN]: '/Admin/index.html'
+    };
+
+    // ========================================
+    // Initialization
+    // ========================================
+    
     /**
      * Initialize auth event listeners
      */
     const init = () => {
         // Switch between forms
-        document.getElementById('goto-signup').addEventListener('click', (e) => {
-            e.preventDefault();
-            showSignupForm();
-        });
+        const gotoSignup = document.getElementById('goto-signup');
+        const gotoSignin = document.getElementById('goto-signin');
+        
+        if (gotoSignup) {
+            gotoSignup.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSignupForm();
+            });
+        }
 
-        document.getElementById('goto-signin').addEventListener('click', (e) => {
-            e.preventDefault();
-            showSigninForm();
-        });
+        if (gotoSignin) {
+            gotoSignin.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSigninForm();
+            });
+        }
 
         // Toggle password visibility
         document.querySelectorAll('.toggle-password').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const targetId = btn.dataset.target;
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.dataset.target;
                 const input = document.getElementById(targetId);
-                const isPassword = input.type === 'password';
-                input.type = isPassword ? 'text' : 'password';
-                // Update icon
-                const iconEl = btn.querySelector('[data-lucide]');
-                iconEl.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
-                lucide.createIcons({ nodes: [btn] });
+                if (input) {
+                    const isPassword = input.type === 'password';
+                    input.type = isPassword ? 'text' : 'password';
+                    // Update icon
+                    const iconEl = this.querySelector('[data-lucide]');
+                    if (iconEl) {
+                        iconEl.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons({ nodes: [this] });
+                        }
+                    }
+                }
             });
         });
 
         // Sign In form submission
-        document.getElementById('signin-form-el').addEventListener('submit', handleSignin);
+        const signinForm = document.getElementById('signin-form-el');
+        if (signinForm) {
+            signinForm.addEventListener('submit', handleSignin);
+        }
 
         // Sign Up form submission
-        document.getElementById('signup-form-el').addEventListener('submit', handleSignup);
+        const signupForm = document.getElementById('signup-form-el');
+        if (signupForm) {
+            signupForm.addEventListener('submit', handleSignup);
+        }
 
         // Sign Out button
-        document.getElementById('signout-btn').addEventListener('click', handleSignout);
+        const signoutBtn = document.getElementById('signout-btn');
+        if (signoutBtn) {
+            signoutBtn.addEventListener('click', handleSignout);
+        }
+
+        // Enter key support for forms
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const activeForm = document.querySelector('.auth-form.active form');
+                if (activeForm) {
+                    const submitBtn = activeForm.querySelector('button[type="submit"]');
+                    if (submitBtn && !submitBtn.disabled) {
+                        e.preventDefault();
+                        submitBtn.click();
+                    }
+                }
+            }
+        });
+
+        // Check for existing session
+        checkSession();
     };
 
+    // ========================================
+    // Form Navigation
+    // ========================================
+    
     const showSigninForm = () => {
-        document.getElementById('signin-form').classList.add('active');
-        document.getElementById('signup-form').classList.remove('active');
-        UI.clearErrors('signin-form-el');
+        const signinForm = document.getElementById('signin-form');
+        const signupForm = document.getElementById('signup-form');
+        if (signinForm) signinForm.classList.add('active');
+        if (signupForm) signupForm.classList.remove('active');
+        
+        // Clear errors
+        const form = document.getElementById('signin-form-el');
+        if (form) clearFormErrors(form);
+        
+        // Focus first input
+        const firstInput = document.getElementById('signin-email');
+        if (firstInput) setTimeout(() => firstInput.focus(), 100);
     };
 
     const showSignupForm = () => {
-        document.getElementById('signup-form').classList.add('active');
-        document.getElementById('signin-form').classList.remove('active');
-        UI.clearErrors('signup-form-el');
+        const signinForm = document.getElementById('signin-form');
+        const signupForm = document.getElementById('signup-form');
+        if (signinForm) signinForm.classList.remove('active');
+        if (signupForm) signupForm.classList.add('active');
+        
+        // Clear errors
+        const form = document.getElementById('signup-form-el');
+        if (form) clearFormErrors(form);
+        
+        // Focus first input
+        const firstInput = document.getElementById('signup-name');
+        if (firstInput) setTimeout(() => firstInput.focus(), 100);
     };
 
-    /**
-     * Handle Sign In
-     */
+    // ========================================
+    // Form Helpers
+    // ========================================
+    
+    const clearFormErrors = (form) => {
+        if (!form) return;
+        const errorElements = form.querySelectorAll('.field-error');
+        errorElements.forEach(el => el.textContent = '');
+        
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(el => el.classList.remove('error'));
+    };
+
+    const setFieldError = (fieldId, message) => {
+        const field = document.getElementById(fieldId);
+        if (field) field.classList.add('error');
+        
+        const errorEl = document.getElementById(`${fieldId}-error`);
+        if (errorEl) {
+            errorEl.textContent = message || '';
+        }
+    };
+
+    const validateEmail = (email) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
+
+    const validatePhone = (phone) => {
+        const cleaned = phone.replace(/\s/g, '');
+        return cleaned.length >= 10 && cleaned.length <= 14 && /^[0-9+()\- ]+$/.test(phone);
+    };
+
+    const setButtonLoading = (btn, loading) => {
+        if (!btn) return;
+        btn.disabled = loading;
+        const textSpan = btn.querySelector('.btn-text');
+        const loaderSpan = btn.querySelector('.btn-loader');
+        
+        if (textSpan && loaderSpan) {
+            if (loading) {
+                textSpan.textContent = 'Please wait...';
+                loaderSpan.style.display = 'inline-block';
+            } else {
+                // Restore original text from data attribute
+                const originalText = btn.dataset.originalText || 'Submit';
+                textSpan.textContent = originalText;
+                loaderSpan.style.display = 'none';
+            }
+        }
+    };
+
+    const showToast = (message, type = 'info') => {
+        if (typeof UI !== 'undefined' && UI.showToast) {
+            UI.showToast(message, type);
+        } else {
+            // Fallback toast
+            const container = document.getElementById('toast-container');
+            if (container) {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `
+                    <span class="toast-message">${message}</span>
+                    <button class="toast-close">&times;</button>
+                `;
+                container.appendChild(toast);
+                setTimeout(() => {
+                    if (toast.parentNode) toast.remove();
+                }, 3000);
+            } else {
+                alert(message);
+            }
+        }
+    };
+
+    // ========================================
+    // Session Management
+    // ========================================
+    
+    const checkSession = () => {
+        const token = API.getToken();
+        const user = API.getUser();
+        
+        if (token && user) {
+            // User is already authenticated
+            console.log('✅ Session found for user:', user.email || user.id);
+            
+            // Update UI
+            updateAuthUI(user);
+            
+            // Redirect if on auth page
+            const authPage = document.getElementById('auth-page');
+            const appShell = document.getElementById('app-shell');
+            
+            if (authPage && authPage.classList.contains('active')) {
+                // Redirect to appropriate page
+                redirectBasedOnRole(user);
+            }
+            
+            return true;
+        }
+        
+        return false;
+    };
+
+    const updateAuthUI = (user) => {
+        if (!user) return;
+        
+        // Update topbar
+        const username = document.getElementById('topbar-username');
+        if (username) {
+            username.textContent = user.name || user.email || 'User';
+        }
+        
+        const avatar = document.getElementById('topbar-avatar');
+        if (avatar) {
+            const initial = (user.name || user.email || 'U')[0].toUpperCase();
+            avatar.textContent = initial;
+        }
+        
+        // Show app shell, hide auth
+        const authPage = document.getElementById('auth-page');
+        const appShell = document.getElementById('app-shell');
+        
+        if (authPage) authPage.classList.remove('active');
+        if (appShell) appShell.classList.add('active');
+    };
+
+    const redirectBasedOnRole = (user) => {
+        if (!user) return;
+        
+        // Check if user has a role
+        const role = user.role || user.userType || 'customer';
+        const redirectPath = REDIRECTS[role] || REDIRECTS[ROLES.CUSTOMER];
+        
+        // Don't redirect if already on the right page
+        const currentPath = window.location.pathname;
+        const targetPath = new URL(redirectPath, window.location.origin).pathname;
+        
+        if (currentPath !== targetPath) {
+            window.location.href = redirectPath;
+        }
+    };
+
+    // ========================================
+    // Handle Sign In
+    // ========================================
+    
     const handleSignin = async (e) => {
         e.preventDefault();
-        UI.clearErrors('signin-form-el');
+        clearFormErrors(e.target);
 
         const email = document.getElementById('signin-email').value.trim();
         const password = document.getElementById('signin-password').value;
@@ -68,77 +300,101 @@ const Auth = (() => {
         let hasError = false;
 
         if (!email) {
-            UI.setFieldError('signin-email', 'Email is required');
+            setFieldError('signin-email', 'Email is required');
             hasError = true;
-        } else if (!UI.isValidEmail(email)) {
-            UI.setFieldError('signin-email', 'Enter a valid email address');
+        } else if (!validateEmail(email)) {
+            setFieldError('signin-email', 'Enter a valid email address');
             hasError = true;
         }
 
         if (!password) {
-            UI.setFieldError('signin-password', 'Password is required');
+            setFieldError('signin-password', 'Password is required');
+            hasError = true;
+        } else if (password.length < 6) {
+            setFieldError('signin-password', 'Password must be at least 6 characters');
             hasError = true;
         }
 
         if (hasError) return;
 
         const btn = document.getElementById('signin-btn');
-        UI.setButtonLoading(btn, true);
+        btn.dataset.originalText = btn.textContent;
+        setButtonLoading(btn, true);
 
         try {
             const response = await API.signin({ email, password });
 
-            // ✅ Handle 403 (pending/rejected/suspended rider)
+            // Handle 403 (pending/rejected/suspended rider)
             if (response.status === 403) {
-                UI.showToast(response.message || 'Your account is pending approval. Please wait for admin confirmation.', 'error');
-                UI.setButtonLoading(btn, false);
+                showToast(response.message || 'Your account is pending approval. Please wait for admin confirmation.', 'warning');
+                setButtonLoading(btn, false);
                 return;
             }
 
-            // ✅ Handle other non-200 responses
+            // Handle other non-200 responses
             if (!response.ok || response.status !== 200) {
-                UI.showToast(response.message || 'Sign in failed. Please try again.', 'error');
-                UI.setButtonLoading(btn, false);
+                showToast(response.message || 'Sign in failed. Please try again.', 'error');
+                setButtonLoading(btn, false);
                 return;
             }
 
-            // ✅ Success - get token and user
+            // Success - get token and user
             const token = response.token;
             const user = response.user || response.data || {};
 
             if (token) {
                 API.saveAuth(token, user);
-                UI.showToast('Welcome back! Signed in successfully.', 'success');
+                showToast('Welcome back! Signed in successfully.', 'success');
 
-                // ✅ Redirect if backend provides redirectPage
+                // Redirect if backend provides redirectPage
                 if (response.redirectPage) {
-                    window.location.href = response.redirectPage;
+                    setTimeout(() => {
+                        window.location.href = response.redirectPage;
+                    }, 500);
                     return;
                 }
 
-                App.onAuthSuccess();
+                // Update UI and redirect based on role
+                updateAuthUI(user);
+                setTimeout(() => {
+                    redirectBasedOnRole(user);
+                }, 500);
+                
             } else {
                 // Fallback if no token but response was ok
-                UI.showToast('Sign in successful.', 'success');
+                showToast('Sign in successful.', 'success');
                 if (user && user.id) {
                     API.saveAuth('session', user);
                 }
-                App.onAuthSuccess();
+                updateAuthUI(user);
+                setTimeout(() => {
+                    redirectBasedOnRole(user);
+                }, 500);
             }
         } catch (error) {
-            // Handle network or other errors
-            UI.showToast(error.message || 'Sign in failed. Please try again.', 'error');
+            console.error('Signin error:', error);
+            const errorMessage = error.message || 'Sign in failed. Please try again.';
+            
+            // Handle specific error messages
+            if (errorMessage.includes('password')) {
+                setFieldError('signin-password', 'Invalid password');
+            } else if (errorMessage.includes('email') || errorMessage.includes('user')) {
+                setFieldError('signin-email', 'Account not found');
+            } else {
+                showToast(errorMessage, 'error');
+            }
         } finally {
-            UI.setButtonLoading(btn, false);
+            setButtonLoading(btn, false);
         }
     };
 
-    /**
-     * Handle Sign Up
-     */
+    // ========================================
+    // Handle Sign Up
+    // ========================================
+    
     const handleSignup = async (e) => {
         e.preventDefault();
-        UI.clearErrors('signup-form-el');
+        clearFormErrors(e.target);
 
         const name = document.getElementById('signup-name').value.trim();
         const email = document.getElementById('signup-email').value.trim();
@@ -148,74 +404,168 @@ const Auth = (() => {
         let hasError = false;
 
         if (!name) {
-            UI.setFieldError('signup-name', 'Full name is required');
+            setFieldError('signup-name', 'Full name is required');
+            hasError = true;
+        } else if (name.length < 2) {
+            setFieldError('signup-name', 'Name must be at least 2 characters');
             hasError = true;
         }
 
         if (!email) {
-            UI.setFieldError('signup-email', 'Email is required');
+            setFieldError('signup-email', 'Email is required');
             hasError = true;
-        } else if (!UI.isValidEmail(email)) {
-            UI.setFieldError('signup-email', 'Enter a valid email address');
+        } else if (!validateEmail(email)) {
+            setFieldError('signup-email', 'Enter a valid email address');
             hasError = true;
         }
 
         if (!phone) {
-            UI.setFieldError('signup-phone', 'Phone number is required');
+            setFieldError('signup-phone', 'Phone number is required');
             hasError = true;
-        } else if (!UI.isValidPhone(phone)) {
-            UI.setFieldError('signup-phone', 'Enter a valid phone number');
+        } else if (!validatePhone(phone)) {
+            setFieldError('signup-phone', 'Enter a valid phone number (10-14 digits)');
             hasError = true;
         }
 
         if (!password) {
-            UI.setFieldError('signup-password', 'Password is required');
+            setFieldError('signup-password', 'Password is required');
             hasError = true;
         } else if (password.length < 6) {
-            UI.setFieldError('signup-password', 'Password must be at least 6 characters');
+            setFieldError('signup-password', 'Password must be at least 6 characters');
             hasError = true;
         }
 
         if (hasError) return;
 
         const btn = document.getElementById('signup-btn');
-        UI.setButtonLoading(btn, true);
+        btn.dataset.originalText = btn.textContent;
+        setButtonLoading(btn, true);
 
         try {
             const response = await API.signup({ name, email, phone, password });
+
+            if (!response.ok) {
+                showToast(response.message || 'Sign up failed. Please try again.', 'error');
+                setButtonLoading(btn, false);
+                return;
+            }
 
             const token = response.token || response.data?.token || '';
             const user = response.user || response.data?.user || response.data || {};
 
             if (token) {
                 API.saveAuth(token, user);
-                UI.showToast('Account created successfully! Welcome to EASYSHIP NG.', 'success');
-                App.onAuthSuccess();
+                showToast('Account created successfully! Welcome to EASYSHIP NG.', 'success');
+                updateAuthUI(user);
+                setTimeout(() => {
+                    redirectBasedOnRole(user);
+                }, 500);
             } else {
-                UI.showToast('Account created! Please sign in.', 'success');
+                showToast('Account created! Please sign in.', 'success');
                 showSigninForm();
-                document.getElementById('signin-email').value = email;
+                const emailField = document.getElementById('signin-email');
+                if (emailField) emailField.value = email;
+                // Focus password field
+                const passwordField = document.getElementById('signin-password');
+                if (passwordField) setTimeout(() => passwordField.focus(), 300);
             }
         } catch (error) {
-            UI.showToast(error.message || 'Sign up failed. Please try again.', 'error');
+            console.error('Signup error:', error);
+            showToast(error.message || 'Sign up failed. Please try again.', 'error');
         } finally {
-            UI.setButtonLoading(btn, false);
+            setButtonLoading(btn, false);
         }
     };
 
-    /**
-     * Handle Sign Out
-     */
-    const handleSignout = async () => {
-        await API.signout();
-        UI.showToast('You have been signed out.', 'info');
-        App.onAuthLogout();
+    // ========================================
+    // Handle Sign Out
+    // ========================================
+    
+    const handleSignout = async (e) => {
+        if (e) e.preventDefault();
+        
+        // Confirm signout
+        if (!confirm('Are you sure you want to sign out?')) {
+            return;
+        }
+        
+        const btn = document.getElementById('signout-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span>Signing out...</span>';
+        }
+        
+        try {
+            await API.signout();
+            showToast('You have been signed out.', 'info');
+            
+            // Reset UI
+            const appShell = document.getElementById('app-shell');
+            const authPage = document.getElementById('auth-page');
+            
+            if (appShell) appShell.classList.remove('active');
+            if (authPage) authPage.classList.add('active');
+            
+            // Show signin form
+            showSigninForm();
+            
+            // Clear form fields
+            const forms = ['signin-form-el', 'signup-form-el'];
+            forms.forEach(formId => {
+                const form = document.getElementById(formId);
+                if (form) {
+                    form.reset();
+                    clearFormErrors(form);
+                }
+            });
+            
+        } catch (error) {
+            console.error('Signout error:', error);
+            showToast('Error signing out. Please try again.', 'error');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="log-out"></i><span>Sign Out</span>';
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        }
     };
 
+    // ========================================
+    // Public API
+    // ========================================
+    
     return {
         init,
         showSigninForm,
         showSignupForm,
         handleSignout,
+        checkSession,
+        updateAuthUI,
+        redirectBasedOnRole,
+        ROLES,
+        REDIRECTS
     };
 })();
+
+// ========================================
+// Auto-initialize when DOM is ready
+// ========================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait for UI to be ready
+    setTimeout(() => {
+        try {
+            Auth.init();
+            console.log('✅ Auth module initialized');
+        } catch (error) {
+            console.error('❌ Auth initialization error:', error);
+        }
+    }, 100);
+});
+
+// Make Auth globally available
+window.Auth = Auth;
+
+console.log('✅ Auth module loaded');

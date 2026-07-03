@@ -1,20 +1,16 @@
 /**
  * Tracking Module for EASYSHIP NG
- * Uses POST /start, POST /update, GET /:orderId for tracking
  */
 
 const Tracking = (() => {
 
-    /**
-     * Initialize tracking module
-     */
     const init = () => {
-        document.getElementById('tracking-search-form').addEventListener('submit', handleTrackSearch);
+        const form = document.getElementById('tracking-search-form');
+        if (form) {
+            form.addEventListener('submit', handleTrackSearch);
+        }
     };
 
-    /**
-     * Handle tracking search form
-     */
     const handleTrackSearch = async (e) => {
         e.preventDefault();
 
@@ -27,25 +23,19 @@ const Tracking = (() => {
         await loadTracking(orderId);
     };
 
-    /**
-     * Load tracking data for an order
-     * Note: The tracking endpoint is GET /:orderId under the tracking route
-     */
     const loadTracking = async (orderId) => {
         const resultContainer = document.getElementById('tracking-result');
+        if (!resultContainer) return;
+        
         resultContainer.style.display = 'block';
         resultContainer.innerHTML = UI.loadingHTML('Fetching tracking information...');
 
         try {
-            // Try the tracking endpoint: GET /api/v1/:orderId
-            // This might be under /tracking/:orderId or just /:orderId
-            // Based on the API spec: GET /:orderId (tracking endpoint)
             const response = await API.getTracking(orderId);
             const trackingData = response.data || response.tracking || response;
             renderTrackingResult(orderId, trackingData);
         } catch (error) {
-            // If the dedicated tracking endpoint fails, try getting order details
-            // and constructing tracking info from the order status
+            // Fallback: try getting order details
             try {
                 const orderResponse = await API.getOrder(orderId);
                 const order = orderResponse.data || orderResponse.order || orderResponse;
@@ -57,79 +47,70 @@ const Tracking = (() => {
                     'Tracking not found',
                     error.message || 'No tracking information available for this order ID.'
                 );
-                lucide.createIcons({ nodes: [resultContainer] });
+                if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [resultContainer] });
             }
         }
     };
 
-    /**
-     * Render tracking result from tracking API data
-     */
     const renderTrackingResult = (orderId, data) => {
         const resultContainer = document.getElementById('tracking-result');
+        if (!resultContainer) return;
+
         const status = data.status || 'pending';
         const currentLocation = data.currentLocation || data.current_location || data.location || 'Unknown';
         const updatedAt = data.updatedAt || data.updated_at || '';
 
-        // Build timeline based on tracking status
         const timeline = buildTimeline(status, currentLocation, updatedAt, data);
 
         resultContainer.innerHTML = `
-            <div class="tracking-result-card">
-                <div class="tracking-result-header">
-                    <h4>Order #${UI.shortId(orderId)}</h4>
+            <div class="tracking-result-card" style="background:rgba(255,255,255,0.03);border-radius:16px;padding:24px;border:1px solid rgba(255,255,255,0.04);">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+                    <h4 style="font-size:1rem;">Order #${UI.shortId(orderId)}</h4>
                     ${UI.statusBadge(status)}
                 </div>
-                <div class="tracking-result-body">
-                    <div class="tracking-timeline">
-                        ${timeline}
-                    </div>
-                    <div class="tracking-location">
-                        <i data-lucide="map-pin"></i>
-                        <span>Current Location: ${currentLocation}</span>
-                    </div>
+                <div style="position:relative;padding-left:24px;">
+                    ${timeline}
+                </div>
+                <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:10px;color:#94a3b8;font-size:0.9rem;">
+                    <i data-lucide="map-pin" style="width:18px;height:18px;color:#f59e0b;"></i>
+                    <span>Current Location: ${currentLocation}</span>
                 </div>
             </div>
         `;
 
-        lucide.createIcons({ nodes: [resultContainer] });
+        if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [resultContainer] });
     };
 
-    /**
-     * Render tracking from order data (fallback)
-     */
     const renderTrackingFromOrder = (orderId, order) => {
         const resultContainer = document.getElementById('tracking-result');
+        if (!resultContainer) return;
+
         const status = order.status || 'pending';
         const pickup = order.pickup?.address || order.pickupAddress || 'Pickup location';
         const dropoff = order.dropoff?.address || order.dropoffAddress || 'Dropoff location';
+        const location = status === 'delivered' ? dropoff : status === 'in_transit' ? 'En Route to ' + dropoff : pickup;
 
-        const timeline = buildTimeline(status, status === 'in_transit' ? 'En Route' : status === 'delivered' ? dropoff : pickup, order.updatedAt || '', order);
+        const timeline = buildTimeline(status, location, order.updatedAt || '', order);
 
         resultContainer.innerHTML = `
-            <div class="tracking-result-card">
-                <div class="tracking-result-header">
-                    <h4>Order #${UI.shortId(orderId)}</h4>
+            <div class="tracking-result-card" style="background:rgba(255,255,255,0.03);border-radius:16px;padding:24px;border:1px solid rgba(255,255,255,0.04);">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+                    <h4 style="font-size:1rem;">Order #${UI.shortId(orderId)}</h4>
                     ${UI.statusBadge(status)}
                 </div>
-                <div class="tracking-result-body">
-                    <div class="tracking-timeline">
-                        ${timeline}
-                    </div>
-                    <div class="tracking-location">
-                        <i data-lucide="map-pin"></i>
-                        <span>${status === 'delivered' ? 'Delivered to: ' + dropoff : status === 'in_transit' ? 'En route to: ' + dropoff : 'At: ' + pickup}</span>
-                    </div>
+                <div style="position:relative;padding-left:24px;">
+                    ${timeline}
+                </div>
+                <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:10px;color:#94a3b8;font-size:0.9rem;">
+                    <i data-lucide="map-pin" style="width:18px;height:18px;color:#f59e0b;"></i>
+                    <span>${location}</span>
                 </div>
             </div>
         `;
 
-        lucide.createIcons({ nodes: [resultContainer] });
+        if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [resultContainer] });
     };
 
-    /**
-     * Build tracking timeline based on status
-     */
     const buildTimeline = (status, currentLocation, updatedAt, data) => {
         const steps = [
             { key: 'pending', label: 'Order Placed', desc: 'Your order has been received' },
@@ -140,34 +121,39 @@ const Tracking = (() => {
 
         const statusOrder = ['pending', 'picked_up', 'in_transit', 'delivered'];
         const currentIndex = statusOrder.indexOf(status);
-        const isCancelled = status === 'cancelled';
 
-        let html = '';
-
-        if (isCancelled) {
-            html = `
-                <div class="timeline-item">
-                    <div class="timeline-dot active" style="border-color:var(--danger);background:var(--danger-light);"></div>
-                    <div class="timeline-content">
-                        <h5>Order Cancelled</h5>
-                        <p>This order was cancelled</p>
+        if (status === 'cancelled') {
+            return `
+                <div class="timeline-item" style="display:flex;gap:14px;margin-bottom:16px;">
+                    <div style="width:12px;height:12px;border-radius:50%;background:#ef4444;border:2px solid rgba(239,68,68,0.3);margin-top:4px;flex-shrink:0;"></div>
+                    <div>
+                        <h5 style="color:#ef4444;">Order Cancelled</h5>
+                        <p style="color:#94a3b8;font-size:0.85rem;margin-top:2px;">This order was cancelled</p>
                     </div>
                 </div>
             `;
-            return html;
         }
 
+        let html = '';
         steps.forEach((step, i) => {
-            const dotClass = i < currentIndex ? 'completed' : i === currentIndex ? 'active' : '';
-            const desc = i === currentIndex && currentLocation ? `Location: ${currentLocation}` : step.desc;
+            const isCompleted = i < currentIndex;
+            const isActive = i === currentIndex;
+            const dotClass = isCompleted ? 'completed' : isActive ? 'active' : '';
+            const dotColor = isCompleted ? '#10b981' : isActive ? '#f59e0b' : '#334155';
+            const dotBorder = isCompleted ? 'rgba(16,185,129,0.3)' : isActive ? 'rgba(245,158,11,0.3)' : 'rgba(51,65,85,0.3)';
+            const lineShow = i < steps.length - 1 ? 'block' : 'none';
+            const desc = isActive && currentLocation ? `Location: ${currentLocation}` : step.desc;
             const time = i <= currentIndex && updatedAt ? UI.formatDateTime(updatedAt) : '';
 
             html += `
-                <div class="timeline-item">
-                    <div class="timeline-dot ${dotClass}"></div>
-                    <div class="timeline-content">
-                        <h5>${step.label}</h5>
-                        <p>${desc}${time ? ' — ' + time : ''}</p>
+                <div class="timeline-item" style="display:flex;gap:14px;margin-bottom:${i < steps.length - 1 ? '20px' : '0'};position:relative;">
+                    <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                        <div style="width:12px;height:12px;border-radius:50%;background:${dotColor};border:2px solid ${dotBorder};margin-top:4px;flex-shrink:0;"></div>
+                        ${i < steps.length - 1 ? `<div style="width:2px;flex:1;background:${isCompleted ? '#10b981' : '#334155'};margin:4px 0;min-height:20px;"></div>` : ''}
+                    </div>
+                    <div style="flex:1;padding-bottom:${i < steps.length - 1 ? '4px' : '0'};">
+                        <h5 style="font-size:0.9rem;color:${isActive ? '#f59e0b' : isCompleted ? '#f1f5f9' : '#64748b'};">${step.label}</h5>
+                        <p style="color:#94a3b8;font-size:0.85rem;margin-top:2px;">${desc}${time ? ' — ' + time : ''}</p>
                     </div>
                 </div>
             `;
@@ -176,11 +162,9 @@ const Tracking = (() => {
         return html;
     };
 
-    /**
-     * Load tracking by orderId (from URL param)
-     */
     const loadTrackingById = (orderId) => {
-        document.getElementById('tracking-order-id').value = orderId;
+        const input = document.getElementById('tracking-order-id');
+        if (input) input.value = orderId;
         loadTracking(orderId);
     };
 

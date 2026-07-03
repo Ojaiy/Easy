@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <!-- ↑ FIX: Added proper viewport for mobile -->
     <title>EASYSHIP NG - Admin Dashboard</title>
 
     <link
@@ -13,6 +14,64 @@
     <script
         src="https://unpkg.com/lucide@latest"
     ></script>
+    
+    <!-- ← FIX: Added mobile toggle styles inline -->
+    <style>
+        /* Additional mobile fixes that work with your CSS */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 150;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #0f172a;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        
+        .sidebar-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        @media (max-width: 900px) {
+            .sidebar-toggle {
+                display: flex;
+            }
+        }
+        
+        /* Fix for close button in review modal */
+        .review-modal-content {
+            position: relative;
+        }
+        
+        /* Better touch targets on mobile */
+        @media (max-width: 600px) {
+            .nav-item {
+                padding: 16px 18px;
+                min-height: 54px;
+            }
+            
+            button, 
+            .nav-item,
+            .logout-btn {
+                touch-action: manipulation;
+            }
+            
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -20,7 +79,8 @@
 <div class="admin-layout">
 
     <!-- SIDEBAR -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
+        <!-- ← FIX: Added ID for mobile toggle -->
 
         <div class="logo-area">
             <h2>EASYSHIP NG</h2>
@@ -72,21 +132,35 @@
             class="logout-btn"
         >
             <i data-lucide="log-out"></i>
-            Logout
+            <span>Logout</span>
+            <!-- ← FIX: Added span for better mobile display -->
         </button>
 
     </aside>
-
+    
+    <!-- ← FIX: Added overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <!-- MAIN -->
     <main class="main-content">
 
         <header class="topbar">
 
-            <div>
-                <h1 id="page-title">
-                    Dashboard
-                </h1>
+            <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                <!-- ← FIX: Added hamburger toggle button -->
+                <button 
+                    class="sidebar-toggle" 
+                    id="sidebar-toggle"
+                    aria-label="Toggle sidebar"
+                >
+                    <i data-lucide="menu" style="width: 28px; height: 28px;"></i>
+                </button>
+                
+                <div style="flex: 1;">
+                    <h1 id="page-title">
+                        Dashboard
+                    </h1>
+                </div>
             </div>
 
             <div class="admin-info">
@@ -156,77 +230,77 @@
         </section>
 
 
-<!-- RIDERS -->
-<section
-    id="page-riders"
-    class="page"
->
+        <!-- RIDERS -->
+        <section
+            id="page-riders"
+            class="page"
+        >
 
-    <div class="section-header">
+            <div class="section-header">
 
-        <div>
+                <div>
 
-            <h2>
-                Rider Management
-            </h2>
+                    <h2>
+                        Rider Management
+                    </h2>
 
-            <p>
-                Review applications and manage active riders
-            </p>
+                    <p>
+                        Review applications and manage active riders
+                    </p>
 
-        </div>
+                </div>
 
-    </div>
-
-
-    <!-- PENDING RIDERS -->
-
-    <div class="rider-section">
-
-        <h3>
-            Pending Applications
-        </h3>
-
-        <div
-            id="riders-container"
-            class="cards-container"
-        ></div>
-
-    </div>
+            </div>
 
 
-    <!-- APPROVED RIDERS -->
+            <!-- PENDING RIDERS -->
 
-    <div class="rider-section">
+            <div class="rider-section">
 
-        <h3>
-            Approved Riders
-        </h3>
+                <h3>
+                    Pending Applications
+                </h3>
 
-        <div
-            id="approved-riders-container"
-            class="cards-container"
-        ></div>
+                <div
+                    id="riders-container"
+                    class="cards-container"
+                ></div>
 
-    </div>
+            </div>
 
 
-    <!-- REJECTED RIDERS -->
+            <!-- APPROVED RIDERS -->
 
-    <div class="rider-section">
+            <div class="rider-section">
 
-        <h3>
-            Rejected Riders
-        </h3>
+                <h3>
+                    Approved Riders
+                </h3>
 
-        <div
-            id="rejected-riders-container"
-            class="cards-container"
-        ></div>
+                <div
+                    id="approved-riders-container"
+                    class="cards-container"
+                ></div>
 
-    </div>
+            </div>
 
-</section>
+
+            <!-- REJECTED RIDERS -->
+
+            <div class="rider-section">
+
+                <h3>
+                    Rejected Riders
+                </h3>
+
+                <div
+                    id="rejected-riders-container"
+                    class="cards-container"
+                ></div>
+
+            </div>
+
+        </section>
 
 
         <!-- CUSTOMERS -->
@@ -235,7 +309,12 @@
             class="page"
         >
 
-            <h2>Customers</h2>
+            <div class="section-header">
+                <div>
+                    <h2>Customers</h2>
+                    <p>Manage all registered customers</p>
+                </div>
+            </div>
 
             <div
                 id="customers-container"
@@ -251,7 +330,12 @@
             class="page"
         >
 
-            <h2>Orders</h2>
+            <div class="section-header">
+                <div>
+                    <h2>Orders</h2>
+                    <p>Track and manage all orders</p>
+                </div>
+            </div>
 
             <div
                 id="orders-container"
@@ -332,6 +416,7 @@
 
 </div>
 
+<!-- REVIEW MODAL -->
 <div
     id="review-modal"
     class="modal"
@@ -359,6 +444,110 @@
 
 <script>
     lucide.createIcons();
+    
+    // ========================================
+    // ← FIX: Mobile Sidebar Toggle Functionality
+    // ========================================
+    (function() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        let isOpen = false;
+        
+        // Only run on mobile (width < 900px)
+        function toggleSidebar() {
+            isOpen = !isOpen;
+            sidebar.classList.toggle('open', isOpen);
+            overlay.classList.toggle('active', isOpen);
+            document.body.style.overflow = isOpen ? 'hidden' : '';
+            
+            // Update toggle button icon
+            if (toggleBtn) {
+                const icon = toggleBtn.querySelector('i');
+                if (icon) {
+                    icon.setAttribute('data-lucide', isOpen ? 'x' : 'menu');
+                    lucide.createIcons();
+                }
+            }
+        }
+        
+        // Toggle button click
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleSidebar();
+            });
+        }
+        
+        // Overlay click to close
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                if (isOpen) toggleSidebar();
+            });
+        }
+        
+        // Close sidebar when clicking a nav item (on mobile)
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth < 900 && isOpen) {
+                    setTimeout(toggleSidebar, 300);
+                }
+            });
+        });
+        
+        // Close sidebar on window resize (if resizing to desktop)
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 900 && isOpen) {
+                toggleSidebar();
+            }
+        });
+        
+        // Close sidebar with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && isOpen) {
+                toggleSidebar();
+            }
+        });
+    })();
+    
+    // ========================================
+    // ← FIX: Prevent body scroll when modal is open
+    // ========================================
+    (function() {
+        const modals = document.querySelectorAll('.modal');
+        
+        function preventBodyScroll(modal) {
+            const isOpen = modal.classList.contains('active');
+            if (isOpen) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                // Check if any other modal is open
+                let anyOpen = false;
+                document.querySelectorAll('.modal').forEach(m => {
+                    if (m.classList.contains('active')) anyOpen = true;
+                });
+                if (!anyOpen) {
+                    document.body.style.overflow = '';
+                }
+            }
+        }
+        
+        // Observe modal class changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName === 'class') {
+                    const modal = mutation.target;
+                    if (modal.classList.contains('modal')) {
+                        preventBodyScroll(modal);
+                    }
+                }
+            });
+        });
+        
+        modals.forEach(modal => {
+            observer.observe(modal, { attributes: true });
+        });
+    })();
 </script>
 
 </body>

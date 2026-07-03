@@ -1,6 +1,5 @@
 /**
  * Orders Module for EASYSHIP NG
- * Handles orders list, order detail, create order
  */
 
 const Orders = (() => {
@@ -10,71 +9,30 @@ const Orders = (() => {
     let currentSearch = '';
     let currentOrderId = null;
 
-    /**
-     * Initialize orders module
-     */
     const init = () => {
-        document.getElementById('orders-search').addEventListener('input', (e) => {
-            currentSearch = e.target.value.trim().toLowerCase();
-            filterAndRender();
-        });
+        const searchInput = document.getElementById('orders-search');
+        const filterSelect = document.getElementById('orders-filter');
+        const createForm = document.getElementById('create-order-form');
 
-        document.getElementById('orders-filter').addEventListener('change', (e) => {
-            currentFilter = e.target.value;
-            filterAndRender();
-        });
-
-        document.getElementById('create-order-form').addEventListener('submit', handleCreateOrder);
-
-        // Listen for global order updates from App socket
-        document.addEventListener('orderUpdated', (e) => {
-            const { orderId, status, message } = e.detail;
-            handleOrderUpdate(orderId, status, message);
-        });
-    };
-
-    /**
-     * Handle real-time order update
-     */
-    const handleOrderUpdate = (orderId, status, message) => {
-        // Update the order in allOrders array
-        const orderIndex = allOrders.findIndex(o => (o._id || o.id) === orderId);
-        if (orderIndex !== -1) {
-            allOrders[orderIndex].status = status;
-            // Re-render if on orders page or dashboard
-            filterAndRender();
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value.trim().toLowerCase();
+                filterAndRender();
+            });
         }
 
-        // Update the detail view if currently viewing this order
-        if (currentOrderId === orderId) {
-            loadOrderDetail(orderId);
+        if (filterSelect) {
+            filterSelect.addEventListener('change', (e) => {
+                currentFilter = e.target.value;
+                filterAndRender();
+            });
         }
 
-        // Update individual status element if it exists
-        const statusEl = document.getElementById(`order-status-${orderId}`);
-        if (statusEl) {
-            statusEl.innerText = formatOrderStatus(status);
+        if (createForm) {
+            createForm.addEventListener('submit', handleCreateOrder);
         }
     };
 
-    /**
-     * Format order status for display
-     */
-    const formatOrderStatus = (status) => {
-        const map = {
-            pending: 'Pending',
-            dispatch_assigned: 'Rider Assigned',
-            pickup_in_progress: 'Package Picked Up',
-            in_transit: 'In Transit',
-            delivered: 'Delivered',
-            cancelled: 'Cancelled'
-        };
-        return map[status] || status;
-    };
-
-    /**
-     * Load orders from API
-     */
     const loadOrders = async () => {
         const user = API.getUser();
         if (!user) return;
@@ -86,6 +44,7 @@ const Orders = (() => {
         }
 
         const container = document.getElementById('orders-list');
+        if (!container) return;
         container.innerHTML = UI.loadingHTML('Loading your orders...');
 
         try {
@@ -100,48 +59,42 @@ const Orders = (() => {
                 'Could not load orders',
                 error.message || 'Please try again later.'
             );
-            lucide.createIcons({ nodes: [container] });
+            if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [container] });
         }
     };
 
-    /**
-     * Filter and render orders
-     */
     const filterAndRender = () => {
         let filtered = [...allOrders];
 
-        // Filter by status
         if (currentFilter !== 'all') {
             filtered = filtered.filter(o => (o.status || 'pending') === currentFilter);
         }
 
-        // Filter by search
         if (currentSearch) {
             filtered = filtered.filter(o => {
                 const id = (o._id || o.id || '').toLowerCase();
                 const pickup = (o.pickup?.address || o.pickupAddress || '').toLowerCase();
                 const dropoff = (o.dropoff?.address || o.dropoffAddress || '').toLowerCase();
                 const recipient = (o.dropoff?.recipientName || o.recipientName || '').toLowerCase();
-                return id.includes(currentSearch) || pickup.includes(currentSearch) || dropoff.includes(currentSearch) || recipient.includes(currentSearch);
+                return id.includes(currentSearch) || pickup.includes(currentSearch) || 
+                       dropoff.includes(currentSearch) || recipient.includes(currentSearch);
             });
         }
 
         renderOrders(filtered);
     };
 
-    /**
-     * Render orders list
-     */
     const renderOrders = (orders) => {
         const container = document.getElementById('orders-list');
+        if (!container) return;
 
         if (!orders || orders.length === 0) {
-            if (allOrders.length === 0) {
-                container.innerHTML = UI.emptyStateHTML('package', 'No orders yet', 'Create your first shipment to see it here.');
-            } else {
-                container.innerHTML = UI.emptyStateHTML('search', 'No matching orders', 'Try adjusting your search or filter.');
-            }
-            lucide.createIcons({ nodes: [container] });
+            container.innerHTML = UI.emptyStateHTML(
+                allOrders.length === 0 ? 'package' : 'search',
+                allOrders.length === 0 ? 'No orders yet' : 'No matching orders',
+                allOrders.length === 0 ? 'Create your first shipment to see it here.' : 'Try adjusting your search or filter.'
+            );
+            if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [container] });
             return;
         }
 
@@ -156,46 +109,42 @@ const Orders = (() => {
             const packageType = order.package?.type || order.packageType || 'package';
 
             html += `
-                <div class="order-card" onclick="App.navigate('order-detail/${orderId}')">
-                    <div class="order-card-icon">
-                        <i data-lucide="package"></i>
-                    </div>
-                    <div class="order-card-info">
-                        <div class="order-card-top">
-                            <span class="order-card-id">#${UI.shortId(orderId)}</span>
-                            <span id="order-status-${orderId}">${UI.statusBadge(status)}</span>
+                <div class="order-item" onclick="App.navigate('order-detail/${orderId}')">
+                    <div class="order-item-left">
+                        <div class="order-item-icon">
+                            <i data-lucide="package"></i>
                         </div>
-                        <div class="order-card-route">${UI.truncate(pickup, 22)} → ${UI.truncate(dropoff, 22)}</div>
-                        <div class="order-card-meta">
-                            <span>${packageType}</span>
-                            <span>•</span>
-                            <span>${UI.formatDate(date)}</span>
+                        <div class="order-item-info">
+                            <div class="order-item-id">#${UI.shortId(orderId)}</div>
+                            <div class="order-item-details">${UI.truncate(pickup, 22)} → ${UI.truncate(dropoff, 22)}</div>
+                            <div class="order-item-details" style="font-size:0.7rem;color:var(--text-muted);">
+                                ${UI.formatStatus(packageType)} • ${UI.formatDate(date)}
+                            </div>
                         </div>
                     </div>
-                    <div class="order-card-right">
-                        <span class="order-card-price">${UI.formatCurrency(price)}</span>
-                        <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--gray-3);"></i>
+                    <div class="order-item-right">
+                        <span class="order-item-price">${UI.formatCurrency(price)}</span>
+                        ${UI.statusBadge(status)}
                     </div>
                 </div>
             `;
         });
 
         container.innerHTML = html;
-        lucide.createIcons({ nodes: [container] });
+        if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [container] });
     };
 
     const renderEmpty = () => {
         const container = document.getElementById('orders-list');
+        if (!container) return;
         container.innerHTML = UI.emptyStateHTML('package', 'No orders yet', 'Create your first shipment to see it here.');
-        lucide.createIcons({ nodes: [container] });
+        if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [container] });
     };
 
-    /**
-     * Load single order detail
-     */
     const loadOrderDetail = async (orderId) => {
         currentOrderId = orderId;
         const container = document.getElementById('order-detail-content');
+        if (!container) return;
         container.innerHTML = UI.loadingHTML('Loading order details...');
 
         try {
@@ -209,15 +158,14 @@ const Orders = (() => {
                 'Could not load order',
                 error.message || 'Please try again later.'
             );
-            lucide.createIcons({ nodes: [container] });
+            if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [container] });
         }
     };
 
-    /**
-     * Render order detail page
-     */
     const renderOrderDetail = (order) => {
         const container = document.getElementById('order-detail-content');
+        if (!container) return;
+
         const orderId = order._id || order.id || '';
         const status = order.status || 'pending';
         const pickup = order.pickup?.address || order.pickupAddress || 'N/A';
@@ -234,131 +182,76 @@ const Orders = (() => {
         const updatedAt = order.updatedAt || order.updated_at || '';
 
         container.innerHTML = `
-            <button class="back-btn" onclick="App.navigate('orders')">
-                <i data-lucide="arrow-left"></i> Back to Orders
+            <button class="back-btn" onclick="App.navigate('orders')" style="display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;padding:8px 16px;background:rgba(255,255,255,0.04);border:none;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:0.9rem;transition:all 0.3s ease;">
+                <i data-lucide="arrow-left" style="width:16px;height:16px;"></i> Back to Orders
             </button>
-            <div class="order-detail-card">
-                <div class="order-detail-header">
-                    <h3>Order #${UI.shortId(orderId)}</h3>
-                    <span id="order-status-${orderId}">${UI.statusBadge(status)}</span>
+            <div class="card" style="padding:24px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+                    <h3 style="font-size:1.1rem;">Order #${UI.shortId(orderId)}</h3>
+                    ${UI.statusBadge(status)}
                 </div>
-                <div class="order-detail-body">
-                    <div class="detail-section">
-                        <div class="route-visual">
-                            <div class="route-line">
-                                <div class="route-dot pickup"></div>
-                                <div class="route-dash"></div>
-                                <div class="route-dot dropoff"></div>
+                
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                    <div style="grid-column:1/-1;background:rgba(255,255,255,0.02);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+                        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                            <div style="flex:1;min-width:150px;">
+                                <div style="font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:600;">Pickup</div>
+                                <div style="margin-top:4px;">${pickup}</div>
                             </div>
-                            <div class="route-addresses">
-                                <div>
-                                    <div class="route-address-label pickup">PICKUP</div>
-                                    <div class="route-address-text">${pickup}</div>
-                                </div>
-                                <div>
-                                    <div class="route-address-label dropoff">DROPOFF</div>
-                                    <div class="route-address-text">${dropoff}</div>
-                                </div>
+                            <div style="flex:1;min-width:150px;">
+                                <div style="font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:600;">Dropoff</div>
+                                <div style="margin-top:4px;">${dropoff}</div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="detail-section">
-                        <div class="detail-section-title">Recipient</div>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">Name</span>
-                                <span class="detail-value">${recipientName}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Phone</span>
-                                <span class="detail-value">${recipientPhone}</span>
-                            </div>
-                        </div>
+                    
+                    <div style="background:rgba(255,255,255,0.02);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+                        <div style="font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:600;margin-bottom:8px;">Recipient</div>
+                        <div style="font-weight:600;">${recipientName}</div>
+                        <div style="font-size:0.9rem;color:#94a3b8;">${recipientPhone}</div>
                     </div>
-
-                    <div class="detail-section">
-                        <div class="detail-section-title">Package</div>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">Type</span>
-                                <span class="detail-value">${UI.formatStatus(packageType)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Weight</span>
-                                <span class="detail-value">${packageWeight} kg</span>
-                            </div>
-                        </div>
+                    
+                    <div style="background:rgba(255,255,255,0.02);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+                        <div style="font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:600;margin-bottom:8px;">Package</div>
+                        <div style="font-weight:600;">${UI.formatStatus(packageType)}</div>
+                        <div style="font-size:0.9rem;color:#94a3b8;">${packageWeight} kg</div>
                     </div>
-
-                    <div class="detail-section">
-                        <div class="detail-section-title">Order Info</div>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">Price</span>
-                                <span class="detail-value" style="color:var(--primary);font-size:1.1rem;">${UI.formatCurrency(price)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Distance</span>
-                                <span class="detail-value">${distance}${typeof distance === 'number' ? ' km' : ''}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Created</span>
-                                <span class="detail-value">${UI.formatDateTime(createdAt)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Last Updated</span>
-                                <span class="detail-value">${UI.formatDateTime(updatedAt)}</span>
-                            </div>
-                            ${driver ? `
-                            <div class="detail-item">
-                                <span class="detail-label">Driver</span>
-                                <span class="detail-value">${typeof driver === 'string' ? UI.shortId(driver) : driver.name || 'Assigned'}</span>
-                            </div>
-                            ` : ''}
-                        </div>
+                    
+                    <div style="background:rgba(255,255,255,0.02);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+                        <div style="font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:600;margin-bottom:8px;">Price</div>
+                        <div style="font-size:1.3rem;font-weight:700;color:#f59e0b;">${UI.formatCurrency(price)}</div>
                     </div>
-
-                    ${instructions && instructions !== 'None' ? `
-                    <div class="detail-section">
-                        <div class="detail-section-title">Instructions</div>
-                        <p style="font-size:0.9rem;color:var(--dark-2);background:var(--gray-7);padding:12px;border-radius:var(--radius-sm);">${instructions}</p>
+                    
+                    <div style="background:rgba(255,255,255,0.02);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+                        <div style="font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:600;margin-bottom:8px;">Distance</div>
+                        <div style="font-weight:600;">${distance}${typeof distance === 'number' ? ' km' : ''}</div>
                     </div>
-                    ` : ''}
-
-                    ${status === 'in_transit' ? `
-                    <div class="detail-section" style="margin-top:16px;">
-                        <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--primary-soft);border-radius:var(--radius-md);">
-                            <i data-lucide="truck" style="width:24px;height:24px;color:var(--primary);"></i>
-                            <div>
-                                <div style="font-weight:600;color:var(--dark-1);">Your package is on the way!</div>
-                                <div style="font-size:0.9rem;color:var(--dark-2);">Track your shipment in real-time</div>
-                            </div>
-                        </div>
+                    
+                    <div style="background:rgba(255,255,255,0.02);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+                        <div style="font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:600;margin-bottom:8px;">Created</div>
+                        <div style="font-weight:600;">${UI.formatDateTime(createdAt)}</div>
                     </div>
-                    ` : ''}
-
-                    ${status === 'delivered' ? `
-                    <div class="detail-section" style="margin-top:16px;">
-                        <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--success-soft);border-radius:var(--radius-md);">
-                            <i data-lucide="check-circle" style="width:24px;height:24px;color:var(--success);"></i>
-                            <div>
-                                <div style="font-weight:600;color:var(--dark-1);">Delivered Successfully! ✅</div>
-                                <div style="font-size:0.9rem;color:var(--dark-2);">Your package has been delivered.</div>
-                            </div>
-                        </div>
+                    
+                    ${driver ? `
+                    <div style="background:rgba(255,255,255,0.02);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+                        <div style="font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:600;margin-bottom:8px;">Driver</div>
+                        <div style="font-weight:600;">${typeof driver === 'string' ? UI.shortId(driver) : driver.name || 'Assigned'}</div>
                     </div>
                     ` : ''}
                 </div>
+                
+                ${instructions && instructions !== 'None' ? `
+                <div style="margin-top:16px;background:rgba(255,255,255,0.02);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+                    <div style="font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:600;margin-bottom:8px;">Instructions</div>
+                    <div style="font-size:0.9rem;color:#94a3b8;">${instructions}</div>
+                </div>
+                ` : ''}
             </div>
         `;
 
-        lucide.createIcons({ nodes: [container] });
+        if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [container] });
     };
 
-    /**
-     * Handle create order form submission
-     */
     const handleCreateOrder = async (e) => {
         e.preventDefault();
         UI.clearErrors('create-order-form');
@@ -385,27 +278,22 @@ const Orders = (() => {
             UI.setFieldError('pickup-address', 'Pickup address is required');
             hasError = true;
         }
-
         if (!dropoffAddress) {
             UI.setFieldError('dropoff-address', 'Dropoff address is required');
             hasError = true;
         }
-
         if (!recipientName) {
             UI.setFieldError('recipient-name', 'Recipient name is required');
             hasError = true;
         }
-
         if (!recipientPhone) {
             UI.setFieldError('recipient-phone', 'Recipient phone is required');
             hasError = true;
         }
-
         if (!packageType) {
             UI.setFieldError('package-type', 'Please select a package type');
             hasError = true;
         }
-
         if (!packageWeight || parseFloat(packageWeight) <= 0) {
             UI.setFieldError('package-weight', 'Enter a valid weight');
             hasError = true;
@@ -428,11 +316,10 @@ const Orders = (() => {
             const response = await API.createOrder(orderPayload);
             UI.showToast('Order created successfully! 🚀', 'success');
 
-            // Reset form
             document.getElementById('create-order-form').reset();
-            document.getElementById('order-summary-preview').style.display = 'none';
+            const preview = document.getElementById('order-summary-preview');
+            if (preview) preview.style.display = 'none';
 
-            // Navigate to the new order
             const newOrder = response.data || response.order || response;
             const newOrderId = newOrder._id || newOrder.id || '';
 
@@ -453,6 +340,5 @@ const Orders = (() => {
         loadOrders,
         loadOrderDetail,
         handleCreateOrder,
-        handleOrderUpdate,
     };
 })();

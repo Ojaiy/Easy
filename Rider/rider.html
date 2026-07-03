@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <!-- ↑ FIX: Added proper viewport for mobile -->
     <title>Register as Rider | EASYSHIP NG</title>
 
     <link rel="stylesheet" href="rider.css">
@@ -11,6 +12,52 @@
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
+    
+    <!-- ← FIX: Added inline styles for mobile improvements -->
+    <style>
+        /* Additional mobile fixes */
+        button, input, select, textarea {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Prevent input zoom on iOS */
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+        
+        /* Better touch targets */
+        button {
+            min-height: 48px;
+        }
+        
+        /* Loading spinner */
+        .btn-loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(15, 23, 42, 0.2);
+            border-top-color: #0f172a;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .register-btn .btn-text {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .register-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -59,27 +106,27 @@
 
                     <div class="form-group">
                         <label>First Name *</label>
-                        <input type="text" id="firstName" required>
+                        <input type="text" id="firstName" required placeholder="Enter first name">
                     </div>
 
                     <div class="form-group">
                         <label>Last Name *</label>
-                        <input type="text" id="lastName" required>
+                        <input type="text" id="lastName" required placeholder="Enter last name">
                     </div>
 
                     <div class="form-group">
                         <label>Email Address *</label>
-                        <input type="email" id="email" required>
+                        <input type="email" id="email" required placeholder="Enter email address">
                     </div>
 
                     <div class="form-group">
                         <label>Phone Number *</label>
-                        <input type="tel" id="phone" required>
+                        <input type="tel" id="phone" required placeholder="Enter phone number">
                     </div>
 
                     <div class="form-group">
                         <label>Password *</label>
-                        <input type="password" id="password" required>
+                        <input type="password" id="password" required placeholder="Create a password">
                     </div>
 
                     <div class="form-group">
@@ -91,7 +138,7 @@
 
                 <div class="form-group full-width">
                     <label>Residential Address *</label>
-                    <textarea id="address" rows="3" required></textarea>
+                    <textarea id="address" rows="3" required placeholder="Enter your full residential address"></textarea>
                 </div>
 
             </div>
@@ -119,22 +166,22 @@
 
                     <div class="form-group">
                         <label>Vehicle Brand *</label>
-                        <input type="text" id="vehicleBrand" required>
+                        <input type="text" id="vehicleBrand" required placeholder="e.g., Toyota">
                     </div>
 
                     <div class="form-group">
                         <label>Vehicle Model *</label>
-                        <input type="text" id="vehicleModel" required>
+                        <input type="text" id="vehicleModel" required placeholder="e.g., Camry">
                     </div>
 
                     <div class="form-group">
                         <label>Vehicle Color *</label>
-                        <input type="text" id="vehicleColor" required>
+                        <input type="text" id="vehicleColor" required placeholder="e.g., Red">
                     </div>
 
                     <div class="form-group full-span">
                         <label>Plate Number *</label>
-                        <input type="text" id="plateNumber" required>
+                        <input type="text" id="plateNumber" required placeholder="e.g., ABC-123-DE">
                     </div>
 
                 </div>
@@ -154,26 +201,48 @@
                     <div class="form-group">
                         <label>Profile Photo *</label>
                         <input type="file" id="profilePhoto" accept="image/*" required>
+                        <div class="upload-preview" id="profilePhoto-preview">
+                            <img src="" alt="Preview">
+                            <span></span>
+                            <i class="fa-solid fa-times remove-file"></i>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label>Driver's License *</label>
                         <input type="file" id="driversLicense" accept=".jpg,.jpeg,.png,.pdf" required>
+                        <div class="upload-preview" id="driversLicense-preview">
+                            <span></span>
+                            <i class="fa-solid fa-times remove-file"></i>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label>Government ID *</label>
                         <input type="file" id="governmentId" accept=".jpg,.jpeg,.png,.pdf" required>
+                        <div class="upload-preview" id="governmentId-preview">
+                            <span></span>
+                            <i class="fa-solid fa-times remove-file"></i>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label>Vehicle Registration *</label>
                         <input type="file" id="vehicleRegistration" accept=".jpg,.jpeg,.png,.pdf" required>
+                        <div class="upload-preview" id="vehicleRegistration-preview">
+                            <span></span>
+                            <i class="fa-solid fa-times remove-file"></i>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label>Vehicle Photo *</label>
                         <input type="file" id="vehiclePhoto" accept="image/*" required>
+                        <div class="upload-preview" id="vehiclePhoto-preview">
+                            <img src="" alt="Preview">
+                            <span></span>
+                            <i class="fa-solid fa-times remove-file"></i>
+                        </div>
                     </div>
 
                 </div>
@@ -186,7 +255,7 @@
                 id="register-btn"
                 class="register-btn"
             >
-                Register as Rider
+                <span class="btn-text">Register as Rider</span>
             </button>
 
             <div class="signin-link">

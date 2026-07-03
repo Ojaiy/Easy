@@ -2,10 +2,75 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <!-- ↑ FIX: Added proper viewport for mobile -->
     <title>Rider Dashboard | EASYSHIP NG</title>
     <link rel="stylesheet" href="./rider-dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <!-- ← FIX: Added mobile menu toggle styles -->
+    <style>
+        /* Mobile hamburger menu for rider dashboard */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #f1f5f9;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .nav-right .rider-name {
+                display: inline-block !important;
+            }
+            
+            .nav-right {
+                gap: 8px;
+            }
+            
+            .logout-btn {
+                padding: 8px 14px;
+                font-size: 0.75rem;
+            }
+            
+            .logout-btn span {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .nav-left h2 {
+                font-size: 0.9rem;
+            }
+            
+            .status-pill {
+                font-size: 0.6rem;
+                padding: 2px 8px;
+            }
+            
+            .nav-logo {
+                width: 28px;
+                height: 28px;
+            }
+        }
+        
+        /* Touch-friendly improvements */
+        button, .btn, .nav-item, .logout-btn {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Prevent input zoom on iOS */
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -21,7 +86,8 @@
             <span class="rider-name" id="rider-name">Loading...</span>
             <button onclick="riderLogout()" class="logout-btn">
                 <i class="fa-solid fa-right-from-bracket"></i>
-                Logout
+                <span>Logout</span>
+                <!-- ← FIX: Added span for better mobile display -->
             </button>
         </div>
     </header>

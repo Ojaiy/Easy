@@ -7,6 +7,7 @@ const App = (() => {
 
     let currentPage = 'dashboard';
     let socket = null;
+    let isAppReady = false;
 
     /**
      * Initialize the application
@@ -14,7 +15,8 @@ const App = (() => {
     const init = () => {
         // Show splash screen
         setTimeout(() => {
-            document.getElementById('splash-screen').classList.add('hidden');
+            const splash = document.getElementById('splash-screen');
+            if (splash) splash.classList.add('hidden');
 
             // Check auth state
             if (API.isAuthenticated()) {
@@ -34,12 +36,46 @@ const App = (() => {
             }
         }, 1800);
 
-        // Initialize all modules
-        Auth.init();
-        Dashboard.init();
-        Orders.init();
-        Tracking.init();
-        Profile.init();
+        // Initialize all modules (with error handling)
+        try {
+            if (typeof Auth !== 'undefined' && Auth.init) {
+                Auth.init();
+            }
+        } catch (e) {
+            console.error('Auth init error:', e);
+        }
+
+        try {
+            if (typeof Dashboard !== 'undefined' && Dashboard.init) {
+                Dashboard.init();
+            }
+        } catch (e) {
+            console.error('Dashboard init error:', e);
+        }
+
+        try {
+            if (typeof Orders !== 'undefined' && Orders.init) {
+                Orders.init();
+            }
+        } catch (e) {
+            console.error('Orders init error:', e);
+        }
+
+        try {
+            if (typeof Tracking !== 'undefined' && Tracking.init) {
+                Tracking.init();
+            }
+        } catch (e) {
+            console.error('Tracking init error:', e);
+        }
+
+        try {
+            if (typeof Profile !== 'undefined' && Profile.init) {
+                Profile.init();
+            }
+        } catch (e) {
+            console.error('Profile init error:', e);
+        }
 
         // Setup sidebar navigation
         setupNavigation();
@@ -49,21 +85,41 @@ const App = (() => {
 
         // Handle hash changes
         window.addEventListener('hashchange', handleRoute);
-        handleRoute();
+        
+        // Handle initial route after DOM is ready
+        setTimeout(handleRoute, 200);
 
         // Update topbar user info
         updateTopbarUser();
+
+        // Close mobile menu on resize to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 900) {
+                closeMobileMenu();
+            }
+        });
+
+        isAppReady = true;
+        console.log('✅ App initialized');
     };
 
     /**
      * Show auth page
      */
     const showAuth = () => {
-        document.getElementById('auth-page').classList.add('active');
-        document.getElementById('app-shell').classList.remove('active');
-        Auth.showSigninForm();
+        const authPage = document.getElementById('auth-page');
+        const appShell = document.getElementById('app-shell');
+        if (authPage) authPage.classList.add('active');
+        if (appShell) appShell.classList.remove('active');
         
-        // Disconnect socket on logout
+        try {
+            if (typeof Auth !== 'undefined' && Auth.showSigninForm) {
+                Auth.showSigninForm();
+            }
+        } catch (e) {
+            console.error('Show signin error:', e);
+        }
+        
         disconnectSocket();
     };
 
@@ -71,15 +127,18 @@ const App = (() => {
      * Show app shell (after auth)
      */
     const showApp = () => {
-        document.getElementById('auth-page').classList.remove('active');
-        document.getElementById('app-shell').classList.add('active');
+        const authPage = document.getElementById('auth-page');
+        const appShell = document.getElementById('app-shell');
+        if (authPage) authPage.classList.remove('active');
+        if (appShell) appShell.classList.add('active');
 
         updateTopbarUser();
 
         // Connect socket for live order updates
         connectSocket();
 
-        handleRoute();
+        // Load initial route
+        setTimeout(handleRoute, 100);
     };
 
     /**
@@ -93,38 +152,55 @@ const App = (() => {
         if (socket && socket.connected) return;
 
         try {
-            socket = io();
+            // Check if socket.io is available
+            if (typeof io === 'undefined') {
+                console.warn('Socket.IO not loaded');
+                return;
+            }
+
+            socket = io({
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000
+            });
             
-            // Join user's private room
-            socket.emit('join_room', user.id);
-            
-            console.log('🔌 Socket connected for user:', user.id);
+            socket.on('connect', () => {
+                // Join user's private room
+                socket.emit('join_room', user.id);
+                console.log('🔌 Socket connected for user:', user.id);
+            });
             
             // Listen for order updates
             socket.on('order_update', (data) => {
                 console.log('📦 Order update received:', data);
                 
                 // Show toast notification
-                UI.showToast(`Order update: ${data.message}`, 'success');
+                if (typeof UI !== 'undefined' && UI.showToast) {
+                    UI.showToast(data.message || 'Order updated!', 'success');
+                }
                 
-                // If Orders module exists, refresh list and detail view
-                if (typeof Orders !== 'undefined') {
-                    // Reload orders list if on orders page
-                    if (currentPage === 'orders' || currentPage === 'dashboard') {
-                        Orders.loadOrders();
+                // Refresh orders if on orders or dashboard page
+                if (currentPage === 'orders' || currentPage === 'dashboard') {
+                    try {
+                        if (typeof Orders !== 'undefined' && Orders.loadOrders) {
+                            Orders.loadOrders();
+                        }
+                    } catch (e) {
+                        console.error('Order refresh error:', e);
                     }
-                    
-                    // Update order detail if currently viewing this order
-                    const currentOrderEl = document.getElementById(`order-status-${data.orderId}`);
-                    if (currentOrderEl) {
-                        currentOrderEl.innerText = formatOrderStatus(data.status);
-                    }
-                    
-                    // Also update the detail view if it's open
-                    if (currentPage === 'order-detail') {
-                        const orderId = window.location.hash.split('/')[1];
-                        if (orderId && orderId === data.orderId) {
-                            Orders.loadOrderDetail(orderId);
+                }
+                
+                // Update order detail if currently viewing this order
+                if (currentPage === 'order-detail') {
+                    const orderId = window.location.hash.split('/')[1];
+                    if (orderId && orderId === data.orderId) {
+                        try {
+                            if (typeof Orders !== 'undefined' && Orders.loadOrderDetail) {
+                                Orders.loadOrderDetail(orderId);
+                            }
+                        } catch (e) {
+                            console.error('Order detail refresh error:', e);
                         }
                     }
                 }
@@ -148,25 +224,14 @@ const App = (() => {
      */
     const disconnectSocket = () => {
         if (socket) {
-            socket.disconnect();
+            try {
+                socket.disconnect();
+            } catch (e) {
+                // Ignore
+            }
             socket = null;
             console.log('🔌 Socket disconnected');
         }
-    };
-
-    /**
-     * Format order status for display
-     */
-    const formatOrderStatus = (status) => {
-        const map = {
-            pending: 'Pending',
-            dispatch_assigned: 'Rider Assigned',
-            pickup_in_progress: 'Package Picked Up',
-            in_transit: 'In Transit',
-            delivered: 'Delivered',
-            cancelled: 'Cancelled'
-        };
-        return map[status] || status;
     };
 
     /**
@@ -193,10 +258,13 @@ const App = (() => {
         if (!user) return;
 
         const name = user.name || 'User';
-        const initials = UI.getInitials(name);
+        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
-        document.getElementById('topbar-avatar').textContent = initials;
-        document.getElementById('topbar-username').textContent = name;
+        const avatar = document.getElementById('topbar-avatar');
+        const username = document.getElementById('topbar-username');
+        
+        if (avatar) avatar.textContent = initials || 'U';
+        if (username) username.textContent = name;
     };
 
     /**
@@ -224,19 +292,29 @@ const App = (() => {
      * Setup mobile menu
      */
     const setupMobileMenu = () => {
-        document.getElementById('menu-toggle').addEventListener('click', openMobileMenu);
-        document.getElementById('sidebar-close').addEventListener('click', closeMobileMenu);
-        document.getElementById('sidebar-overlay').addEventListener('click', closeMobileMenu);
+        const toggle = document.getElementById('menu-toggle');
+        const close = document.getElementById('sidebar-close');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        if (toggle) toggle.addEventListener('click', openMobileMenu);
+        if (close) close.addEventListener('click', closeMobileMenu);
+        if (overlay) overlay.addEventListener('click', closeMobileMenu);
     };
 
     const openMobileMenu = () => {
-        document.getElementById('sidebar').classList.add('open');
-        document.getElementById('sidebar-overlay').classList.add('active');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (sidebar) sidebar.classList.add('open');
+        if (overlay) overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
     };
 
     const closeMobileMenu = () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebar-overlay').classList.remove('active');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (sidebar) sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
     };
 
     /**
@@ -247,15 +325,20 @@ const App = (() => {
 
         if (window.location.hash !== `#${cleanPath}`) {
             window.location.hash = cleanPath;
+        } else {
+            switchPage(cleanPath);
         }
-
-        switchPage(cleanPath);
     };
 
     /**
      * Handle route change
      */
     const handleRoute = () => {
+        if (!API.isAuthenticated()) {
+            showAuth();
+            return;
+        }
+
         let hash = window.location.hash.replace('#', '');
 
         if (!hash) {
@@ -266,11 +349,6 @@ const App = (() => {
         const page = parts[0];
         const param = parts.slice(1).join('/');
 
-        if (!API.isAuthenticated()) {
-            showAuth();
-            return;
-        }
-
         switchPage(page, param);
     };
 
@@ -278,47 +356,27 @@ const App = (() => {
      * Switch active page
      */
     const switchPage = (page, param) => {
-
+        // Hide all pages
         document.querySelectorAll('.app-page').forEach(p => {
             p.classList.remove('active');
         });
 
+        // Update nav items
         document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
             item.classList.remove('active');
-
-            if (
-                item.dataset.page === page ||
-                (page === 'order-detail' && item.dataset.page === 'orders')
-            ) {
+            if (item.dataset.page === page || 
+                (page === 'order-detail' && item.dataset.page === 'orders')) {
                 item.classList.add('active');
             }
         });
 
         const pageMap = {
-            dashboard: {
-                id: 'page-dashboard',
-                title: 'Dashboard'
-            },
-            orders: {
-                id: 'page-orders',
-                title: 'Orders'
-            },
-            'create-order': {
-                id: 'page-create-order',
-                title: 'New Order'
-            },
-            tracking: {
-                id: 'page-tracking',
-                title: 'Track Shipment'
-            },
-            profile: {
-                id: 'page-profile',
-                title: 'Profile'
-            },
-            'order-detail': {
-                id: 'page-order-detail',
-                title: 'Order Details'
-            }
+            dashboard: { id: 'page-dashboard', title: 'Dashboard' },
+            orders: { id: 'page-orders', title: 'Orders' },
+            'create-order': { id: 'page-create-order', title: 'New Order' },
+            tracking: { id: 'page-tracking', title: 'Track Shipment' },
+            profile: { id: 'page-profile', title: 'Profile' },
+            'order-detail': { id: 'page-order-detail', title: 'Order Details' }
         };
 
         const pageInfo = pageMap[page];
@@ -329,14 +387,19 @@ const App = (() => {
         }
 
         const pageEl = document.getElementById(pageInfo.id);
-
         if (pageEl) {
             pageEl.classList.add('active');
         }
 
-        document.getElementById('page-title').textContent =
-            pageInfo.title;
+        const title = document.getElementById('page-title');
+        if (title) {
+            title.textContent = pageInfo.title;
+        }
 
+        // Close mobile menu
+        closeMobileMenu();
+
+        // Load page data
         loadPageData(page, param);
 
         currentPage = page;
@@ -346,36 +409,52 @@ const App = (() => {
      * Load data for the current page
      */
     const loadPageData = (page, param) => {
-        switch (page) {
+        try {
+            switch (page) {
+                case 'dashboard':
+                    if (typeof Dashboard !== 'undefined' && Dashboard.load) {
+                        Dashboard.load();
+                    }
+                    break;
 
-            case 'dashboard':
-                Dashboard.load();
-                break;
+                case 'orders':
+                    if (typeof Orders !== 'undefined' && Orders.loadOrders) {
+                        Orders.loadOrders();
+                    }
+                    break;
 
-            case 'orders':
-                Orders.loadOrders();
-                break;
+                case 'order-detail':
+                    if (param && typeof Orders !== 'undefined' && Orders.loadOrderDetail) {
+                        Orders.loadOrderDetail(param);
+                    }
+                    break;
 
-            case 'order-detail':
-                if (param) {
-                    Orders.loadOrderDetail(param);
-                }
-                break;
+                case 'tracking':
+                    if (param && typeof Tracking !== 'undefined' && Tracking.loadTrackingById) {
+                        Tracking.loadTrackingById(param);
+                    } else if (typeof Tracking !== 'undefined' && Tracking.load) {
+                        Tracking.load();
+                    }
+                    break;
 
-            case 'tracking':
-                if (param) {
-                    Tracking.loadTrackingById(param);
-                }
-                break;
+                case 'profile':
+                    if (typeof Profile !== 'undefined' && Profile.load) {
+                        Profile.load();
+                    }
+                    break;
 
-            case 'profile':
-                Profile.load();
-                break;
-
-            case 'create-order':
-                break;
+                case 'create-order':
+                    break;
+            }
+        } catch (error) {
+            console.error('Error loading page data:', error);
         }
     };
+
+    /**
+     * Check if app is ready
+     */
+    const isReady = () => isAppReady;
 
     return {
         init,
@@ -384,12 +463,36 @@ const App = (() => {
         navigate,
         updateTopbarUser,
         connectSocket,
-        disconnectSocket
+        disconnectSocket,
+        isReady
     };
 
 })();
 
 // ==================== BOOT ====================
 document.addEventListener('DOMContentLoaded', () => {
-    App.init();
+    // Small delay to ensure DOM is fully rendered
+    setTimeout(() => {
+        try {
+            App.init();
+        } catch (error) {
+            console.error('❌ App initialization failed:', error);
+            // Show error state
+            const splash = document.getElementById('splash-screen');
+            if (splash) {
+                splash.innerHTML = `
+                    <div style="text-align:center;color:#ef4444;padding:20px;">
+                        <h2>Failed to load application</h2>
+                        <p style="color:#94a3b8;">Please refresh the page</p>
+                        <button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#f59e0b;border:none;border-radius:8px;color:#0f172a;font-weight:700;cursor:pointer;">
+                            Refresh
+                        </button>
+                    </div>
+                `;
+                splash.classList.remove('hidden');
+            }
+        }
+    }, 100);
 });
+
+console.log('✅ App module loaded');

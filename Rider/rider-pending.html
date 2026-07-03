@@ -1,143 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-    Application Under Review
-</title>
-
-<link
-    rel="stylesheet"
-    href="rider-pending.css"
->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Application Under Review</title>
+    <link rel="stylesheet" href="rider-pending.css">
 </head>
-
 <body>
-
-<div class="container">
-
-    <div class="card">
-
-        <div class="icon">
-            ⏳
+    <div class="container">
+        <div class="card">
+            <div class="icon">⏳</div>
+            <h1>Application Submitted</h1>
+            <p>Your rider application has been received successfully.</p>
+            <p>Our team is reviewing your documents and information.</p>
+            <div class="status-box">
+                Status: <span id="status-text">Pending Approval</span>
+            </div>
+            <p class="small">Review usually takes 24 - 48 hours.</p>
+            <button onclick="logout()">Logout</button>
         </div>
-
-        <h1>
-            Application Submitted
-        </h1>
-
-        <p>
-            Your rider application has been
-            received successfully.
-        </p>
-
-        <p>
-            Our team is reviewing your
-            documents and information.
-        </p>
-
-        <div class="status-box">
-
-            Status:
-            <span id="status-text">
-                Pending Approval
-            </span>
-
-        </div>
-
-        <p class="small">
-
-            Review usually takes
-            24 - 48 hours.
-
-        </p>
-
-        <button
-            onclick="logout()"
-        >
-            Logout
-        </button>
-
     </div>
-
-</div>
-
-<script>
-
-function logout() {
-
-    localStorage.removeItem('easyship_token');
-    localStorage.removeItem('easyship_user');
-
-    window.location.href = '/User/index.html';
-}
-
-async function checkRiderStatus() {
-
-    const token = localStorage.getItem('easyship_token');
-
-    if (!token) {
-        window.location.href = '/User/index.html';
-        return;
-    }
-
-    try {
-
-        const response = await fetch('/api/v1/rider/status', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            if (response.status === 401 || response.status === 403) {
-                localStorage.removeItem('easyship_token');
-                localStorage.removeItem('easyship_user');
-                window.location.href = '/User/index.html';
-            }
-            return;
-        }
-
-        if (data.success && data.status === 'approved') {
-            window.location.href = data.redirectPage;
-            return;
-        }
-
-        if (data.success && data.status === 'rejected') {
-            window.location.href = data.redirectPage;
-            return;
-        }
-
-        if (data.success && data.status === 'suspended') {
-            window.location.href = data.redirectPage;
-            return;
-        }
-
-        // status is still 'pending' — stay on this page
-
-    } catch (error) {
-        console.error('Status check failed:', error);
-    }
-}
-
-checkRiderStatus();
-
-const statusPollInterval = setInterval(checkRiderStatus, 30000);
-
-window.addEventListener('beforeunload', () => {
-    clearInterval(statusPollInterval);
-});
-
-</script>
-
+    <script src="rider-pending.js"></script>
 </body>
 </html>

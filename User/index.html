@@ -2,25 +2,335 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <!-- ↑ FIX: Added proper viewport for mobile -->
     <title>EASYSHIP NG — Fast, Secure Logistics</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- ← FIX: Added inline styles for mobile improvements -->
+    <style>
+        /* Additional mobile fixes that work with your CSS */
+        button, input, select, textarea, .nav-item, .quick-action-btn {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Prevent input zoom on iOS */
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+        
+        /* Better touch targets */
+        button, .btn-primary, .btn-secondary, .btn-danger, .nav-item {
+            min-height: 44px;
+        }
+        
+        /* Mobile-specific fixes */
+        @media (max-width: 768px) {
+            .auth-wrapper {
+                flex-direction: column;
+                min-height: 100vh;
+            }
+            
+            .auth-left {
+                padding: 30px 20px 20px;
+                min-height: auto;
+            }
+            
+            .auth-right {
+                padding: 30px 20px;
+                min-height: auto;
+                flex: 1;
+            }
+            
+            .auth-brand-name {
+                font-size: 1.8rem;
+            }
+            
+            .auth-logo-box {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .auth-form {
+                max-width: 100%;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .dashboard-bottom {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+            
+            .sidebar-close {
+                display: flex;
+            }
+            
+            .menu-toggle {
+                display: flex;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .topbar {
+                padding: 0 16px;
+                height: 56px;
+            }
+            
+            .page-content {
+                padding: 16px;
+            }
+            
+            .topbar-username {
+                display: none;
+            }
+            
+            .stat-value {
+                font-size: 1.3rem;
+            }
+            
+            .stat-icon-wrap {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .stat-icon-wrap i {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .dash-card {
+                padding: 16px;
+            }
+            
+            .page-top-bar {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+            }
+            
+            .search-wrapper {
+                width: 100%;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+            
+            .filter-select {
+                width: 100%;
+            }
+            
+            .tracking-search-form {
+                flex-direction: column;
+            }
+            
+            .tracking-search-form .input-wrapper {
+                width: 100%;
+            }
+            
+            .tracking-search-form .btn-primary {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .auth-left {
+                padding: 20px 16px 16px;
+            }
+            
+            .auth-right {
+                padding: 20px 16px;
+            }
+            
+            .auth-brand-name {
+                font-size: 1.5rem;
+            }
+            
+            .auth-logo-box {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .auth-form-header h2 {
+                font-size: 1.4rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            
+            .stat-value {
+                font-size: 1.1rem;
+            }
+            
+            .stat-label {
+                font-size: 0.65rem;
+            }
+            
+            .stat-icon-wrap {
+                width: 34px;
+                height: 34px;
+            }
+            
+            .stat-icon-wrap i {
+                width: 16px;
+                height: 16px;
+            }
+            
+            .dash-card {
+                padding: 12px;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            
+            .quick-action-btn {
+                padding: 14px 10px;
+            }
+            
+            .quick-action-btn i {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .quick-action-btn span {
+                font-size: 0.7rem;
+            }
+            
+            .topbar {
+                padding: 0 12px;
+                height: 50px;
+            }
+            
+            .page-title {
+                font-size: 1rem;
+            }
+            
+            .page-content {
+                padding: 12px;
+            }
+            
+            .card {
+                padding: 14px;
+            }
+            
+            .card-header h3 {
+                font-size: 0.9rem;
+            }
+            
+            .recent-order-item {
+                padding: 10px;
+            }
+            
+            .recent-order-id {
+                font-size: 0.8rem;
+            }
+            
+            .recent-order-route {
+                font-size: 0.7rem;
+            }
+            
+            .form-card {
+                padding: 16px;
+            }
+            
+            .form-card-header h3 {
+                font-size: 1.1rem;
+            }
+            
+            .input-wrapper input,
+            .input-wrapper select {
+                padding: 10px 12px 10px 36px;
+                font-size: 14px;
+            }
+            
+            .input-icon {
+                left: 10px;
+                width: 16px;
+                height: 16px;
+            }
+            
+            .btn-primary {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+                min-height: 44px;
+            }
+            
+            .splash-title {
+                font-size: 2rem;
+            }
+            
+            .splash-logo-img {
+                width: 60px;
+                height: 60px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .auth-brand-name {
+                font-size: 1.3rem;
+            }
+            
+            .stat-value {
+                font-size: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Splash / Loading Screen -->
-   <!-- Splash / Loading Screen -->
-<div id="splash-screen" class="splash-screen">
-    <div class="splash-content">
-        <img src="./EasyLogo.png" alt="EASYSHIP NG" class="splash-logo-img">
-        <h1 class="splash-title">EASYSHIP NG</h1>
-        <p class="splash-tagline">Fast, Secure Logistics</p>
-        <div class="splash-loader">
-            <div class="splash-loader-bar"></div>
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content">
+            <img src="./EasyLogo.png" alt="EASYSHIP NG" class="splash-logo-img">
+            <h1 class="splash-title">EASYSHIP NG</h1>
+            <p class="splash-tagline">Fast, Secure Logistics</p>
+            <div class="splash-loader">
+                <div class="splash-loader-bar"></div>
+            </div>
         </div>
     </div>
-</div>
 
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
@@ -68,7 +378,7 @@
                             <div class="input-wrapper">
                                 <i data-lucide="lock" class="input-icon"></i>
                                 <input type="password" id="signin-password" placeholder="Enter your password" required>
-                                <button type="button" class="toggle-password" data-target="signin-password">
+                                <button type="button" class="toggle-password" data-target="signin-password" aria-label="Toggle password visibility">
                                     <i data-lucide="eye" class="eye-icon"></i>
                                 </button>
                             </div>
@@ -120,7 +430,7 @@
                             <div class="input-wrapper">
                                 <i data-lucide="lock" class="input-icon"></i>
                                 <input type="password" id="signup-password" placeholder="Min 6 characters" required>
-                                <button type="button" class="toggle-password" data-target="signup-password">
+                                <button type="button" class="toggle-password" data-target="signup-password" aria-label="Toggle password visibility">
                                     <i data-lucide="eye" class="eye-icon"></i>
                                 </button>
                             </div>
@@ -157,7 +467,7 @@
                     <img src="./EasyLogo.png" alt="EASYSHIP NG" class="sidebar-logo-img">
                     <span class="sidebar-brand">EASYSHIP NG</span>
                 </div>
-                <button class="sidebar-close" id="sidebar-close">
+                <button class="sidebar-close" id="sidebar-close" aria-label="Close sidebar">
                     <i data-lucide="x"></i>
                 </button>
             </div>
@@ -199,13 +509,13 @@
             <!-- Top Bar -->
             <header class="topbar">
                 <div class="topbar-left">
-                    <button class="menu-toggle" id="menu-toggle">
+                    <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">
                         <i data-lucide="menu"></i>
                     </button>
                     <h2 class="page-title" id="page-title">Dashboard</h2>
                 </div>
                 <div class="topbar-right">
-                    <button class="topbar-icon-btn" id="notif-btn">
+                    <button class="topbar-icon-btn" id="notif-btn" aria-label="Notifications">
                         <i data-lucide="bell"></i>
                         <span class="notif-dot"></span>
                     </button>
