@@ -2152,3 +2152,24 @@ button, .btn-primary, .btn-secondary, .btn-danger, .nav-item, .quick-action-btn 
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ========================================
+   FIX #2 - Mobile bottom bar fix
+   ======================================== */
+
+/* Fix for sign out button being covered by Chrome bottom bar */
+.sidebar-footer {
+    padding: 12px 10px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 20px));
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+    
+    .sidebar-footer .nav-item {
+        margin-bottom: 10px;
+    }
+}

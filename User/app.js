@@ -107,21 +107,34 @@ const App = (() => {
      * Show auth page
      */
     const showAuth = () => {
-        const authPage = document.getElementById('auth-page');
-        const appShell = document.getElementById('app-shell');
-        if (authPage) authPage.classList.add('active');
-        if (appShell) appShell.classList.remove('active');
-        
-        try {
-            if (typeof Auth !== 'undefined' && Auth.showSigninForm) {
-                Auth.showSigninForm();
-            }
-        } catch (e) {
-            console.error('Show signin error:', e);
+    // Check if already logged in - if so, redirect back
+    if (API.isAuthenticated()) {
+        const user = API.getUser();
+        if (user) {
+            const role = user.role || 'customer';
+            const redirects = {
+                'customer': '/User/index.html',
+                'rider': '/Rider/rider-dashboard.html',
+                'admin': '/Admin/index.html'
+            };
+            window.location.href = redirects[role] || redirects['customer'];
+            return;
         }
-        
-        disconnectSocket();
-    };
+    }
+    
+    const authPage = document.getElementById('auth-page');
+    const appShell = document.getElementById('app-shell');
+    if (authPage) authPage.classList.add('active');
+    if (appShell) appShell.classList.remove('active');
+    
+    try {
+        if (typeof Auth !== 'undefined' && Auth.showSigninForm) {
+            Auth.showSigninForm();
+        }
+    } catch (e) {}
+    
+    disconnectSocket();
+};
 
     /**
      * Show app shell (after auth)
