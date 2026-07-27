@@ -264,16 +264,16 @@ const API = (() => {
 
     // ==================== TRACKING ====================
     const startTracking = async (trackingData) => {
-        return await request('/start', { method: 'POST', body: trackingData });
+        return await request('/tracking/start', { method: 'POST', body: trackingData });
     };
 
     const updateTracking = async (trackingData) => {
-        return await request('/update', { method: 'POST', body: trackingData });
+        return await request('/tracking/update', { method: 'POST', body: trackingData });
     };
 
     const getTracking = async (orderId) => {
         if (!orderId) throw new APIError('Order ID is required for tracking', 400);
-        return await request(`/${orderId}`);
+        return await request(`/tracking/${orderId}`);
     };
 
     // ==================== RIDER ====================
