@@ -242,14 +242,14 @@ const API = (() => {
 
     // ==================== ORDERS ====================
     const createOrder = async (orderData) => {
-        const isFormData = orderData instanceof FormData;
-        return await request('/createOrder', {
-            method: 'POST',
-            body: orderData,
-            headers: isFormData ? {} : undefined,
-        });
-    };
+    const isFormData = orderData instanceof FormData;
 
+    return await request('/createOrder', {
+        method: 'POST',
+        body: orderData,
+        ...(isFormData ? { headers: {} } : {})
+    });
+};
     const getOrders = async () => {
     return await request('/orders');
 };
