@@ -34,21 +34,16 @@ const Orders = (() => {
     };
 
     const loadOrders = async () => {
-        const user = API.getUser();
-        if (!user) return;
+const user = API.getUser();
+if (!user) return;
 
-        const customerId = user.id || user._id || user.userId;
-        if (!customerId) {
-            renderEmpty();
-            return;
-        }
+const container = document.getElementById('orders-list');
+if (!container) return;
 
-        const container = document.getElementById('orders-list');
-        if (!container) return;
-        container.innerHTML = UI.loadingHTML('Loading your orders...');
+container.innerHTML = UI.loadingHTML('Loading your orders...');
 
-        try {
-            const response = await API.getOrders(customerId);
+try {
+    const response = await API.getOrders();
             allOrders = response.data || response.orders || response;
             if (!Array.isArray(allOrders)) allOrders = [];
             filterAndRender();
@@ -173,7 +168,6 @@ const Orders = (() => {
         const recipientName = order.dropoff?.recipientName || order.recipientName || 'N/A';
         const recipientPhone = order.dropoff?.phone || order.recipientPhone || 'N/A';
         const packageType = order.package?.type || order.packageType || 'N/A';
-        const packageWeight = order.package?.weight || order.packageWeight || 'N/A';
         const instructions = order.instructions || 'None';
         const price = order.price || 0;
         const distance = order.distance || '—';
@@ -214,7 +208,6 @@ const Orders = (() => {
                     <div style="background:rgba(255,255,255,0.02);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
                         <div style="font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:600;margin-bottom:8px;">Package</div>
                         <div style="font-weight:600;">${UI.formatStatus(packageType)}</div>
-                        <div style="font-size:0.9rem;color:#94a3b8;">${packageWeight} kg</div>
                     </div>
                     
                     <div style="background:rgba(255,255,255,0.02);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
@@ -253,87 +246,97 @@ const Orders = (() => {
     };
 
     const handleCreateOrder = async (e) => {
-        e.preventDefault();
-        UI.clearErrors('create-order-form');
+    e.preventDefault();
 
-        const user = API.getUser();
-        if (!user) {
-            UI.showToast('Please sign in to create an order.', 'warning');
-            return;
-        }
+    UI.clearErrors('create-order-form');
 
-        const customerId = user.id || user._id || user.userId;
+    const pickupAddress = document.getElementById('pickup-address').value.trim();
+    const dropoffAddress = document.getElementById('dropoff-address').value.trim();
+    const recipientName = document.getElementById('recipient-name').value.trim();
+    const recipientPhone = document.getElementById('recipient-phone').value.trim();
+    const packageType = document.getElementById('package-type').value;
+    const instructions = document.getElementById('instructions').value.trim();
 
-        const pickupAddress = document.getElementById('pickup-address').value.trim();
-        const dropoffAddress = document.getElementById('dropoff-address').value.trim();
-        const recipientName = document.getElementById('recipient-name').value.trim();
-        const recipientPhone = document.getElementById('recipient-phone').value.trim();
-        const packageType = document.getElementById('package-type').value;
-        const packageWeight = document.getElementById('package-weight').value;
-        const instructions = document.getElementById('instructions').value.trim();
+    let hasError = false;
 
-        let hasError = false;
+    if (!pickupAddress) {
+        UI.setFieldError('pickup-address', 'Pickup address is required');
+        hasError = true;
+    }
 
-        if (!pickupAddress) {
-            UI.setFieldError('pickup-address', 'Pickup address is required');
-            hasError = true;
-        }
-        if (!dropoffAddress) {
-            UI.setFieldError('dropoff-address', 'Dropoff address is required');
-            hasError = true;
-        }
-        if (!recipientName) {
-            UI.setFieldError('recipient-name', 'Recipient name is required');
-            hasError = true;
-        }
-        if (!recipientPhone) {
-            UI.setFieldError('recipient-phone', 'Recipient phone is required');
-            hasError = true;
-        }
-        if (!packageType) {
-            UI.setFieldError('package-type', 'Please select a package type');
-            hasError = true;
-        }
-        if (!packageWeight || parseFloat(packageWeight) <= 0) {
-            UI.setFieldError('package-weight', 'Enter a valid weight');
-            hasError = true;
-        }
+    if (!dropoffAddress) {
+        UI.setFieldError('dropoff-address', 'Drop-off address is required');
+        hasError = true;
+    }
 
-        if (hasError) return;
+    if (!recipientName) {
+        UI.setFieldError('recipient-name', 'Recipient name is required');
+        hasError = true;
+    }
 
-        const btn = document.getElementById('create-order-btn');
-        UI.setButtonLoading(btn, true);
+    if (!recipientPhone) {
+        UI.setFieldError('recipient-phone', 'Recipient phone is required');
+        hasError = true;
+    }
 
-        const orderPayload = {
-            customerId,
-            pickup: { address: pickupAddress },
-            dropoff: { address: dropoffAddress, recipientName, phone: recipientPhone },
-            package: { type: packageType, weight: parseFloat(packageWeight) },
-            instructions,
-        };
+    if (!packageType) {
+        UI.setFieldError('package-type', 'Please select a package type');
+        hasError = true;
+    }
 
-        try {
-            const response = await API.createOrder(orderPayload);
-            UI.showToast('Order created successfully! 🚀', 'success');
+    if (hasError) return;
 
-            document.getElementById('create-order-form').reset();
-            const preview = document.getElementById('order-summary-preview');
-            if (preview) preview.style.display = 'none';
+    const btn = document.getElementById('create-order-btn');
+    UI.setButtonLoading(btn, true);
 
-            const newOrder = response.data || response.order || response;
-            const newOrderId = newOrder._id || newOrder.id || '';
+    const orderPayload = {
+        pickup: {
+            address: pickupAddress
+        },
 
-            if (newOrderId) {
-                App.navigate(`order-detail/${newOrderId}`);
-            } else {
-                App.navigate('orders');
-            }
-        } catch (error) {
-            UI.showToast(error.message || 'Failed to create order. Please try again.', 'error');
-        } finally {
-            UI.setButtonLoading(btn, false);
-        }
+        dropoff: {
+            address: dropoffAddress,
+            recipientName,
+            phone: recipientPhone
+        },
+
+        package: {
+            type: packageType
+        },
+
+        instructions
     };
+
+    try {
+
+        const response = await API.createOrder(orderPayload);
+
+UI.showToast('Order created successfully!', 'success');
+
+document.getElementById('create-order-form').reset();
+
+const preview = document.getElementById('order-summary-preview');
+if (preview) {
+    preview.style.display = 'none';
+}
+
+console.log("Distance:", response.distance);
+console.log("Price:", response.price);
+
+App.navigate(`payment/${response.orderId}`);
+    } catch (error) {
+
+        UI.showToast(
+            error.message || 'Failed to create order.',
+            'error'
+        );
+
+    } finally {
+
+        UI.setButtonLoading(btn, false);
+
+    }
+};
 
     return {
         init,

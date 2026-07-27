@@ -249,28 +249,18 @@ const API = (() => {
         });
     };
 
-    const getOrders = async (customerId) => {
-        if (!customerId) {
-            const user = getUser();
-            if (user && user.id) customerId = user.id;
-            else throw new APIError('Customer ID not found', 400);
-        }
-        return await request(`/orders/${customerId}`);
-    };
+    const getOrders = async () => {
+    return await request('/orders');
+};
 
     const getOrder = async (orderId) => {
         if (!orderId) throw new APIError('Order ID is required', 400);
         return await request(`/order/${orderId}`);
     };
 
-    const getDashboard = async (customerId) => {
-        if (!customerId) {
-            const user = getUser();
-            if (user && user.id) customerId = user.id;
-            else throw new APIError('Customer ID not found', 400);
-        }
-        return await request(`/dashboard/${customerId}`);
-    };
+    const getDashboard = async () => {
+    return await request('/dashboard');
+};
 
     // ==================== TRACKING ====================
     const startTracking = async (trackingData) => {

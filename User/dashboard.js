@@ -9,26 +9,26 @@ const Dashboard = (() => {
     const init = () => {};
 
     const load = async () => {
-        const user = API.getUser();
-        if (!user) return;
+    const user = API.getUser();
+    if (!user) return;
 
-        const customerId = user.id || user._id || user.userId;
-        if (!customerId) {
-            renderEmpty();
-            return;
-        }
+    showSkeletonLoading();
 
-        showSkeletonLoading();
+    try {
+        const response = await API.getDashboard();
 
-        try {
-            const response = await API.getDashboard(customerId);
-            dashboardData = response.data || response.dashboard || response;
-            render(dashboardData);
-        } catch (error) {
-            console.error('Dashboard load error:', error);
-            renderError(error.message);
-        }
-    };
+        dashboardData = response.data || response.dashboard || response;
+
+        render(dashboardData);
+
+    } catch (error) {
+
+        console.error('Dashboard load error:', error);
+
+        renderError(error.message);
+
+    }
+};
 
     const showSkeletonLoading = () => {
         document.getElementById('dash-total-orders').textContent = '—';
