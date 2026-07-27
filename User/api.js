@@ -77,6 +77,7 @@ const API = (() => {
 
     const prepareRequest = (options = {}) => {
         const token = getToken();
+        console.log("TOKEN:", token);
         
         const config = {
             headers: {
@@ -104,7 +105,7 @@ const API = (() => {
         }, CONFIG.timeout);
 
         config._timeoutId = timeoutId;
-
+        console.log(config.headers);
         return config;
     };
 
