@@ -180,7 +180,7 @@ function renderAvailableOrders(orders) {
                 <p><strong>Pickup:</strong> ${order.pickup?.address || 'N/A'}</p>
                 <p><strong>Dropoff:</strong> ${order.dropoff?.address || 'N/A'}</p>
                 <p><strong>Recipient:</strong> ${order.dropoff?.recipientName || 'N/A'}</p>
-                <p><strong>Package:</strong> ${order.package?.type || 'N/A'} (${order.package?.weight || 0}kg)</p>
+                <p><strong>Package:</strong> ${order.package?.type || 'N/A'}</p>
                 <p><strong>Price:</strong> ₦${order.price || 0}</p>
             </div>
             <button class="btn accept" onclick="acceptOrder('${order._id}')">
