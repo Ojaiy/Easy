@@ -259,6 +259,27 @@ const API = (() => {
         return await request(`/order/${orderId}`);
     };
 
+    // ==================== PAYMENTS ====================
+const initializePayment = async (orderId) => {
+    return await request(`/payment/initialize/${orderId}`, { method: 'POST' });
+};
+
+const verifyPayment = async (reference) => {
+    return await request(`/payment/verify/${reference}`);
+};
+
+const getPaymentStatus = async (orderId) => {
+    return await request(`/payment/status/${orderId}`);
+};
+
+const getPaymentHistory = async () => {
+    return await request('/payment/history');
+};
+
+const cancelPayment = async (orderId) => {
+    return await request(`/payment/cancel/${orderId}`, { method: 'PATCH' });
+};
+
     const getDashboard = async () => {
     return await request('/dashboard');
 };
@@ -305,6 +326,11 @@ const API = (() => {
         createOrder,
         getOrders,
         getOrder,
+        initializePayment,
+        verifyPayment,
+        getPaymentStatus,
+        getPaymentHistory,
+        cancelPayment,
         getDashboard,
         startTracking,
         updateTracking,

@@ -476,6 +476,10 @@
                     <i data-lucide="layout-dashboard"></i>
                     <span>Dashboard</span>
                 </a>
+                     <a href="#payment" class="nav-item" data-page="payment" style="display:none;" id="payment-nav-item">
+                     <i data-lucide="credit-card"></i>
+                    <span>Payment</span>
+                </a>
                 <a href="#orders" class="nav-item" data-page="orders">
                     <i data-lucide="package"></i>
                     <span>Orders</span>
@@ -528,6 +532,15 @@
 
             <!-- Page Containers -->
             <div class="page-content">
+                <!-- Payment Page -->
+                <section id="page-payment" class="app-page">
+                    <div id="payment-content">
+                        <div class="loading-spinner">
+                         <div class="spinner"></div>
+                         <p>Loading payment details...</p>
+                        </div>
+                 </div>
+                </section>
                 <!-- Dashboard Page -->
                 <section id="page-dashboard" class="app-page active">
                     <div class="dashboard-grid">
@@ -792,6 +805,7 @@
     <script src="auth.js"></script>
     <script src="dashboard.js"></script>
     <script src="orders.js"></script>
+    <script src="payment.js"></script>
     <script src="tracking.js"></script>
     <script src="profile.js"></script>
     <script src="app.js"></script>

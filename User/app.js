@@ -46,6 +46,10 @@ const App = (() => {
             if (typeof Profile !== 'undefined' && Profile.init) Profile.init();
         } catch (e) { console.error('Profile init error:', e); }
 
+        try {
+         if (typeof Payment !== 'undefined' && Payment.init) Payment.init();
+        } catch (e) { console.error('Payment init error:', e); }
+
         setupNavigation();
         setupMobileMenu();
         window.addEventListener('hashchange', handleRoute);
@@ -267,6 +271,7 @@ const App = (() => {
         const pageMap = {
             dashboard: { id: 'page-dashboard', title: 'Dashboard' },
             orders: { id: 'page-orders', title: 'Orders' },
+            payment: { id: "page-payment", title: "Payment"},
             'create-order': { id: 'page-create-order', title: 'New Order' },
             tracking: { id: 'page-tracking', title: 'Track Shipment' },
             profile: { id: 'page-profile', title: 'Profile' },
@@ -301,6 +306,11 @@ const App = (() => {
                         Orders.loadOrderDetail(param);
                     }
                     break;
+                      case 'payment':
+                    if (param) {
+                        Payment.loadPaymentPage(param);
+                    }
+                        break;
                 case 'tracking':
                     if (param && typeof Tracking !== 'undefined' && Tracking.loadTrackingById) {
                         Tracking.loadTrackingById(param);
